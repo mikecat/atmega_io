@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <limits.h>
 #include "avr_io.h"
 
 /**
@@ -69,10 +70,37 @@ int *fuse_high_bits, int *extended_fuse_bits, int *calibration_byte) {
 
 int read_program(const avrio_t *func, unsigned int *data_out,
 unsigned int start_addr, unsigned int data_size) {
+	int out_seq[4];
 	int spe_ret;
+	unsigned int i, j;
+	if (func == NULL || data_out == NULL ||
+	UINT_MAX - data_size < start_addr || ((start_addr + data_size) & ~0xffff) != 0) {
+		/* オーバーフローまたはアドレスがオーバーランする */
+		return AVRIO_INVALID_PARAMETER;
+	}
 	spe_ret = send_programming_enable(func);
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
-	return 0;
+	out_seq[3] = 0x00;
+	for (i = 0; i < data_size; i++) {
+		int ret1, ret2;
+		/* Low byteを読み込む */
+		out_seq[0] = 0x20;
+		out_seq[1] = ((start_addr + i) >> 8) & 0xff;
+		out_seq[2] = (start_addr + i) & 0xff;
+		for (j = 0; j < 4; j++) {
+			ret1 = (func->io_8bits)(out_seq[j]);
+			if (ret1 < 0) return AVRIO_CONTROLLER_ERROR;
+		}
+		/* High byteを読み込む */
+		out_seq[0] = 0x28;
+		for (j = 0; j < 4; j++) {
+			ret2 = (func->io_8bits)(out_seq[j]);
+			if (ret2 < 0) return AVRIO_CONTROLLER_ERROR;
+		}
+		/* 合体して格納する */
+		data_out[i] = (unsigned int)ret1 | ((unsigned int)ret2 << 8);
+	}
+	return AVRIO_SUCCESS;
 }
 
 int read_eeprom(const avrio_t *func, int *data_out,
