@@ -167,10 +167,30 @@ int chip_erase(const avrio_t *func) {
 }
 
 int write_information(const avrio_t *func, int lock_bits, int fuse_bits,
-int fuse_high_bits, int extended_fuse_bits, int calibration_byte) {
+int fuse_high_bits, int extended_fuse_bits) {
+	int out_seq[4][4] = {
+		{0xAC, 0xE0, 0x00, lock_bits},
+		{0xAC, 0xA0, 0x00, fuse_bits},
+		{0xAC, 0xA8, 0x00, fuse_high_bits},
+		{0xAC, 0xA4, 0x00, extended_fuse_bits}
+	};
 	int spe_ret;
+	int i, j;
+	int ret;
 	spe_ret = send_programming_enable(func);
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
+	for (i = 0; i < 4; i++) {
+		if (out_seq[i][3] < 0) continue;
+		/* 書き込みを行う */
+		for (j = 0; j < 4; j++) {
+			ret = (func->io_8bits)(out_seq[i][j]);
+			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
+		}
+		/* 完了を待つ */
+		ret = wait_operation(func);
+		if (ret != AVRIO_SUCCESS) return ret;
+	}
+	return AVRIO_SUCCESS;
 }
 
 int write_program(const avrio_t *func, const unsigned int *data,

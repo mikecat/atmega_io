@@ -81,11 +81,10 @@ int chip_erase(const avrio_t *func);
  * @param fuse_bits Fuse bitsをに書き込むデータ
  * @param fuse_high_bits Fuse High bitsに書き込むデータ
  * @param extended_fuse_bits Extended Huse Bitsに書き込むデータ
- * @param calibration_byte Calibration Byteに書き込むデータ
  * @return エラーコード
  */
 int write_information(const avrio_t *func, int lock_bits, int fuse_bits,
-	int fuse_high_bits, int extended_fuse_bits, int calibration_byte);
+	int fuse_high_bits, int extended_fuse_bits);
 
 /**
  * プログラムデータを書き込む。
