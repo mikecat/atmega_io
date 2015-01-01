@@ -89,6 +89,7 @@ int write_information(const avrio_t *func, int lock_bits, int fuse_bits,
 /**
  * プログラムデータを書き込む。
  * data_outはあらかじめ十分な領域を確保しておかないといけない。
+ * start_addrはpage_sizeの倍数でないといけない。
  * @param func 利用する関数が格納された構造体へのポインタ
  * @param data 書き込むプログラムデータを格納する配列
  * @param start_addr 書き込みを開始するプログラムデータのアドレス

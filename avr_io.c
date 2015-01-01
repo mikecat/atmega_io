@@ -195,9 +195,51 @@ int fuse_high_bits, int extended_fuse_bits) {
 
 int write_program(const avrio_t *func, const unsigned int *data,
 unsigned int start_addr, unsigned int data_size, unsigned int page_size) {
+	int out_seq[4];
 	int spe_ret;
+	unsigned int i, j;
+	int ret;
+	if (func == NULL || data == NULL ||
+	UINT_MAX - data_size < start_addr || ((start_addr + data_size) & ~0x03ff) != 0 ||
+	page_size == 0 || start_addr % page_size != 0) {
+		/* オーバーフローまたはアドレスがオーバーランするまたはアラインメント違反 */
+		return AVRIO_INVALID_PARAMETER;
+	}
 	spe_ret = send_programming_enable(func);
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
+	for (i = 0; i < data_size; i++) {
+		/* Low byteをloadする */
+		out_seq[0] = 0x40;
+		out_seq[1] = 0;
+		out_seq[2] = (start_addr + i) & 0xff;
+		out_seq[3] = data[i] & 0xff;
+		for (j = 0; j < 4; j++) {
+			ret = (func->io_8bits)(out_seq[j]);
+			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
+		}
+		/* High byteをloadする */
+		out_seq[0] = 0x40;
+		out_seq[3] = (data[i] >> 8) & 0xff;
+		for (j = 0; j < 4; j++) {
+			ret = (func->io_8bits)(out_seq[j]);
+			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
+		}
+		/* データの終わりまたはページの区切り */
+		if ((i + 1) % page_size == 0 || (i + 1) >= data_size) {
+			/* PageをWriteする */
+			out_seq[0] = 0x4C;
+			out_seq[1] = ((start_addr + i) >> 8) & 0xff;
+			out_seq[3] = 0x00;
+			for (j = 0; j < 4; j++) {
+				ret = (func->io_8bits)(out_seq[j]);
+				if (ret < 0) return AVRIO_CONTROLLER_ERROR;
+			}
+			/* 完了を待つ */
+			ret = wait_operation(func);
+			if (ret != AVRIO_SUCCESS) return ret;
+		}
+	}
+	return AVRIO_SUCCESS;
 }
 
 int write_eeprom(const avrio_t *func, const int *data,
