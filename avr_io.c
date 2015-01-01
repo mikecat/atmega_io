@@ -52,7 +52,7 @@ int *fuse_high_bits, int *extended_fuse_bits, int *calibration_byte) {
 	};
 	int i, j;
 	int spe_ret;
-	if (func != NULL) return AVRIO_INVALID_PARAMETER;
+	if (func == NULL) return AVRIO_INVALID_PARAMETER;
 	spe_ret = send_programming_enable(func);
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
 	for (i = 0; i < 5; i++) {
