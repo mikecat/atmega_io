@@ -52,7 +52,8 @@ int read_information(const avrio_t *func, int *lock_bits, int *fuse_bits,
  * @param data_size 読み込むプログラムのワード数
  * @return エラーコード
  */
-int read_program(const avrio_t *func, int *data_out, int start_addr, int data_size);
+int read_program(const avrio_t *func, unsigned int *data_out,
+	unsigned int start_addr, unsigned int data_size);
 
 /**
  * EEPROMのデータを読み込む。
@@ -63,7 +64,8 @@ int read_program(const avrio_t *func, int *data_out, int start_addr, int data_si
  * @param data_size 読み込むEEPROMデータのワード数
  * @return エラーコード
  */
-int read_eeprom(const avrio_t *func, int *data_out, int start_addr, int data_size);
+int read_eeprom(const avrio_t *func, int *data_out,
+	unsigned int start_addr, unsigned int data_size);
 
 /**
  * Chip Eraseを行う。
@@ -95,12 +97,12 @@ int write_information(const avrio_t *func, int lock_bits, int fuse_bits,
  * @param page_size 書き込みに使用するページサイズ(適切に設定しないと失敗します)
  * @return エラーコード
  */
-int write_program(const avrio_t *func, const int *data,
-	int start_addr, int data_size, int page_size);
+int write_program(const avrio_t *func, const unsigned int *data,
+	unsigned int start_addr, unsigned int data_size, unsigned int page_size);
 
 /**
  * EEPROMのデータを書き込む。
- * page_sizeを0以下にすると、1ワードずつ書き込みます。
+ * page_sizeを0にすると、1ワードずつ書き込みます。
  * data_outはあらかじめ十分な領域を確保しておかないといけない。
  * @param func 利用する関数が格納された構造体へのポインタ
  * @param data 書き込むEEPROMデータを格納する配列
@@ -110,6 +112,6 @@ int write_program(const avrio_t *func, const int *data,
  * @return エラーコード
  */
 int write_eeprom(const avrio_t *func, const int *data,
-	int start_addr, int data_size, int page_size);
+	unsigned int start_addr, unsigned int data_size, unsigned int page_size);
 
 #endif

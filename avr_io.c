@@ -67,14 +67,16 @@ int *fuse_high_bits, int *extended_fuse_bits, int *calibration_byte) {
 	return AVRIO_SUCCESS;
 }
 
-int read_program(const avrio_t *func, int *data_out, int start_addr, int data_size) {
+int read_program(const avrio_t *func, unsigned int *data_out,
+unsigned int start_addr, unsigned int data_size) {
 	int spe_ret;
 	spe_ret = send_programming_enable(func);
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
 	return 0;
 }
 
-int read_eeprom(const avrio_t *func, int *data_out, int start_addr, int data_size) {
+int read_eeprom(const avrio_t *func, int *data_out,
+unsigned int start_addr, unsigned int data_size) {
 	int spe_ret;
 	spe_ret = send_programming_enable(func);
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
@@ -94,15 +96,15 @@ int fuse_high_bits, int extended_fuse_bits, int calibration_byte) {
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
 }
 
-int write_program(const avrio_t *func, const int *data,
-int start_addr, int data_size, int page_size) {
+int write_program(const avrio_t *func, const unsigned int *data,
+unsigned int start_addr, unsigned int data_size, unsigned int page_size) {
 	int spe_ret;
 	spe_ret = send_programming_enable(func);
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
 }
 
 int write_eeprom(const avrio_t *func, const int *data,
-int start_addr, int data_size, int page_size) {
+unsigned int start_addr, unsigned int data_size, unsigned int page_size) {
 	int spe_ret;
 	spe_ret = send_programming_enable(func);
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
