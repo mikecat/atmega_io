@@ -154,9 +154,16 @@ unsigned int start_addr, unsigned int data_size) {
 }
 
 int chip_erase(const avrio_t *func) {
+	static const int out_seq[4] = {0xAC, 0x80, 0x00, 0x00};
 	int spe_ret;
+	int i;
 	spe_ret = send_programming_enable(func);
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
+	for (i = 0; i < 4; i++) {
+		int ret = (func->io_8bits)(out_seq[i]);
+		if (ret < 0) return AVRIO_CONTROLLER_ERROR;
+	}
+	return wait_operation(func);
 }
 
 int write_information(const avrio_t *func, int lock_bits, int fuse_bits,
