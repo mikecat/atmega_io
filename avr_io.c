@@ -34,7 +34,7 @@ int read_signature_byte(const avrio_t *func, int *out) {
 		out_seq[2]++;
 		out[i] = ret;
 	}
-	return 0;
+	return AVRIO_SUCCESS;
 }
 
 int read_information(const avrio_t *func, int *lock_bits, int *fuse_bits,
