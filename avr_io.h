@@ -102,16 +102,14 @@ int write_program(const avrio_t *func, const unsigned int *data,
 
 /**
  * EEPROMのデータを書き込む。
- * page_sizeを0にすると、1ワードずつ書き込みます。
  * data_outはあらかじめ十分な領域を確保しておかないといけない。
  * @param func 利用する関数が格納された構造体へのポインタ
  * @param data 書き込むEEPROMデータを格納する配列
  * @param start_addr 書き込みを開始するEEPROMのアドレス
  * @param data_size 書き込むEEPROMデータのワード数
- * @param page_size 書き込みに使用するページサイズ(適切に設定しないと失敗します)
  * @return エラーコード
  */
 int write_eeprom(const avrio_t *func, const int *data,
-	unsigned int start_addr, unsigned int data_size, unsigned int page_size);
+	unsigned int start_addr, unsigned int data_size);
 
 #endif
