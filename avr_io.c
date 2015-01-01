@@ -31,7 +31,7 @@ int read_signature_byte(const avrio_t *func, int *out) {
 			ret = (func->io_8bits)(out_seq[j]);
 			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 		}
-		out_set[2]++;
+		out_seq[2]++;
 		out[i] = ret;
 	}
 	return 0;
@@ -39,10 +39,32 @@ int read_signature_byte(const avrio_t *func, int *out) {
 
 int read_information(const avrio_t *func, int *lock_bits, int *fuse_bits,
 int *fuse_high_bits, int *extended_fuse_bits, int *calibration_byte) {
+	static const int out_seq[5][4] = {
+		{0x58, 0x00, 0x00, 0x00},
+		{0x50, 0x00, 0x00, 0x00},
+		{0x58, 0x08, 0x00, 0x00},
+		{0x50, 0x08, 0x00, 0x00},
+		{0x38, 0x00, 0x00, 0x00}
+	};
+	int *ptr[5] = {
+		lock_bits, fuse_bits, fuse_high_bits,
+		extended_fuse_bits, calibration_byte
+	};
+	int i, j;
 	int spe_ret;
+	if (func != NULL) return AVRIO_INVALID_PARAMETER;
 	spe_ret = send_programming_enable(func);
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
-	return 0;
+	for (i = 0; i < 5; i++) {
+		int ret = 0;
+		if (ptr[i] == NULL) continue;
+		for (j = 0; j < 4; j++) {
+			ret = (func->io_8bits)(out_seq[i][j]);
+			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
+		}
+		*ptr[i] = ret;
+	}
+	return AVRIO_SUCCESS;
 }
 
 int read_program(const avrio_t *func, int *data_out, int start_addr, int data_size) {
