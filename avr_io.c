@@ -19,9 +19,21 @@ static int send_programming_enable(const avrio_t *func) {
 }
 
 int read_signature_byte(const avrio_t *func, int *out) {
+	int out_seq[4] = {0x30, 0x00, 0x00, 0x00};
+	int i, j;
 	int spe_ret;
+	if (func == NULL || out == NULL) return AVRIO_INVALID_PARAMETER;
 	spe_ret = send_programming_enable(func);
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
+	for (i = 0; i < 3; i++) {
+		int ret = 0;
+		for (j = 0; j < 4; j++) {
+			ret = (func->io_8bits)(out_seq[j]);
+			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
+		}
+		out_set[2]++;
+		out[i] = ret;
+	}
 	return 0;
 }
 
