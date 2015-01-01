@@ -1,4 +1,22 @@
+#include <stdio.h>
 #include "avr_io.h"
+
+/**
+ * Programming Enableを送信する
+ * @param func 利用する関数が格納された構造体へのポインタ
+ * @return エラーコード
+ */
+static int send_programming_enable(const avrio_t *func) {
+	static const int out_seq[4] = {0xAC, 0x53, 0x00, 0x00};
+	int in_seq[4];
+	int i;
+	if (func == NULL) return AVRIO_INVALID_PARAMETER;
+	for (i = 0; i < 4; i++) {
+		in_seq[i] = (func->io_8bits)(out_seq[i]);
+		if (in_seq[i] < 0) return AVRIO_CONTROLLER_ERROR;
+	}
+	return in_seq[2] == 0x53 ? AVRIO_SUCCESS : AVRIO_PROGRAMMING_ENABLE_ERROR;
+}
 
 int read_signature_byte(const avrio_t *func, int *out) {
 	return 0;
