@@ -218,7 +218,7 @@ unsigned int start_addr, unsigned int data_size, unsigned int page_size) {
 			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 		}
 		/* High byteをloadする */
-		out_seq[0] = 0x40;
+		out_seq[0] = 0x48;
 		out_seq[3] = (data[i] >> 8) & 0xff;
 		for (j = 0; j < 4; j++) {
 			ret = (func->io_8bits)(out_seq[j]);
