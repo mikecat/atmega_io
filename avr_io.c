@@ -19,6 +19,31 @@ static int send_programming_enable(const avrio_t *func) {
 	return in_seq[2] == 0x53 ? AVRIO_SUCCESS : AVRIO_PROGRAMMING_ENABLE_ERROR;
 }
 
+/**
+ * Poll RDY/~BSYを実行する。
+ * 0が返ってくるまで処理を続ける。
+ * @param func 利用する関数が格納された構造体へのポインタ
+ * @return エラーコード
+ */
+static int wait_operation(const avrio_t *func) {
+	static const int out_seq[4] = {0xF0, 0x00, 0x00, 0x00};
+	int in_seq[4];
+	int i;
+	int ret;
+	if (func == NULL) return AVRIO_INVALID_PARAMETER;
+	do {
+		/* 念のためin syncかを確認する */
+		ret = send_programming_enable(func);
+		if (ret != AVRIO_SUCCESS) return ret;
+		/* ポーリングを行う */
+		for (i = 0; i < 4; i++) {
+			in_seq[i] = (func->io_8bits)(out_seq[i]);
+			if (in_seq[i] < 0) return AVRIO_CONTROLLER_ERROR;
+		}
+	} while ((in_seq[3] & 1) != 0);
+	return AVRIO_SUCCESS;
+}
+
 int read_signature_byte(const avrio_t *func, int *out) {
 	int out_seq[4] = {0x30, 0x00, 0x00, 0x00};
 	int i, j;
