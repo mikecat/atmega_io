@@ -7,16 +7,6 @@ typedef struct {
 	 * 成功したら読み込んだ値(0以上255以下)、失敗したら-1を返す。
 	 */
 	int (*io_8bits)(int out);
-	/* リセット出力を設定する関数
-	 * reset_outが真 : HIGHを出力する
-	 * reset_outが偽 : LOWを出力する
-	 * 成功したら真を、失敗したら偽を返す。
-	 */
-	int (*set_reset)(int reset_out);
-	/* wait_timeミリ秒ウェイトを入れる関数
-	 * 成功したら真を、失敗したら偽を返す。
-	 */
-	int (*wait)(int wait_time);
 } avrio_t;
 
 /* エラーコード */
