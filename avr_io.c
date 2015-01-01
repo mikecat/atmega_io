@@ -200,7 +200,7 @@ unsigned int start_addr, unsigned int data_size, unsigned int page_size) {
 	unsigned int i, j;
 	int ret;
 	if (func == NULL || data == NULL ||
-	UINT_MAX - data_size < start_addr || ((start_addr + data_size) & ~0x03ff) != 0 ||
+	UINT_MAX - data_size < start_addr || ((start_addr + data_size) & ~0xffff) != 0 ||
 	page_size == 0 || start_addr % page_size != 0) {
 		/* オーバーフローまたはアドレスがオーバーランするまたはアラインメント違反 */
 		return AVRIO_INVALID_PARAMETER;
