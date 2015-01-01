@@ -105,10 +105,27 @@ unsigned int start_addr, unsigned int data_size) {
 
 int read_eeprom(const avrio_t *func, int *data_out,
 unsigned int start_addr, unsigned int data_size) {
+	int out_seq[4] = {0xA0, 0x00, 0x00, 0x00};
 	int spe_ret;
+	unsigned int i, j;
+	if (func == NULL || data_out == NULL ||
+	UINT_MAX - data_size < start_addr || ((start_addr + data_size) & ~0x03ff) != 0) {
+		/* オーバーフローまたはアドレスがオーバーランする */
+		return AVRIO_INVALID_PARAMETER;
+	}
 	spe_ret = send_programming_enable(func);
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
-	return 0;
+	for (i = 0; i < data_size; i++) {
+		int ret;
+		out_seq[1] = ((start_addr + i) >> 8) & 0x03;
+		out_seq[2] = (start_addr + i) & 0xff;
+		for (j = 0; j < 4; j++) {
+			ret = (func->io_8bits)(out_seq[j]);
+			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
+		}
+		data_out[i] = ret;
+	}
+	return AVRIO_SUCCESS;
 }
 
 int chip_erase(const avrio_t *func) {
