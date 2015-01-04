@@ -4,7 +4,7 @@
 #include "avr_io.h"
 
 int main(int argc, char *argv[]) {
-	int *data;
+	unsigned int *data;
 	int page_size;
 	int read_size;
 	avrio_t avrio;
@@ -14,10 +14,10 @@ int main(int argc, char *argv[]) {
 	sscanf(argv[2], "%d", &read_size) != 1) {
 		fprintf(stderr, "Usage: %s page_size read_size out_file\n",
 			argc > 0 ? argv[0] : "read_avr");
-		fputs("serial out   : J1-7\n", stderr);
-		fputs("serial in    : J2-0\n", stderr);
-		fputs("serial clock : J1-6\n", stderr);
-		fputs("reset        : J1-5\n", stderr);
+		fputs("serial out   (MOSI) : J1-7\n", stderr);
+		fputs("serial in    (MISO) : J2-0\n", stderr);
+		fputs("serial clock (SCK)  : J1-6\n", stderr);
+		fputs("reset               : J1-5\n", stderr);
 		return 1;
 	}
 	if (!usbio_init(&avrio, 8, 7, 6, 5)) {
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 	} else {
 		fputs("read_information error\n", stderr);
 	}
-	data = malloc(sizeof(int) * read_size);
+	data = malloc(sizeof(unsigned int) * read_size);
 	if (data != NULL) {
 		if (read_program(&avrio, data, 0, read_size) == AVRIO_SUCCESS) {
 			FILE* fp;
@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
 		} else {
 			fputs("read_program error\n", stderr);
 		}
+		free(data);
 	} else {
 		fputs("malloc error\n", stderr);
 	}
