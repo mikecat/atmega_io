@@ -18,4 +18,9 @@ int usbio_stop(avrio_t *avrio);
  */
 int usbio_io_8bits(void *hardware_data, int out);
 
+/* USB-IO2.0を用いてリセットを行う。
+ * 成功と判定したら真、失敗を検出したら偽を返す。
+ */
+int usbio_reset(void *hardware_data);
+
 #endif

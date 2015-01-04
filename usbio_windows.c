@@ -148,3 +148,16 @@ int usbio_stop(avrio_t *avrio) {
 int usbio_io_8bits(void *hardware_data, int out) {
 	return -1;
 }
+
+int usbio_reset(void *hardware_data) {
+	HANDLE hDevice;
+	int reset_port;
+	if (hardware_data = NULL) return 0;
+	hDevice = ((hid_t*)hardware_data)->hDevice;
+	reset_port = ((hid_t*)hardware_data)->reset_port;
+	if (!inputAndOutput(hDevice, 1 << reset_port, NULL)) return 0;
+	Sleep(1);
+	if (!inputAndOutput(hDevice, 0, NULL)) return 0;
+	Sleep(20);
+	return 1;
+}
