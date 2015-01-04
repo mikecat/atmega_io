@@ -6,7 +6,7 @@ typedef struct {
 	/* 各ハードウェア操作プログラム定義のデータ */
 	void *hardware_data;
 	/* 1オクテット読み書きする関数
-	 * 成功したら読み込んだ値(0以上255以下)、失敗したら-1を返す。
+	 * 成功と判定したら読み込んだ値(0以上255以下)、失敗を検出したら-1を返す。
 	 */
 	int (*io_8bits)(void *hardware_data, int out);
 } avrio_t;

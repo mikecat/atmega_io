@@ -14,7 +14,7 @@ int usbio_init(avrio_t *avrio, int sin_port, int sout_port, int reset_port);
 int usbio_stop(avrio_t *avrio);
 
 /* USB-IO2.0を用いて8ビット送受信する。
- * 成功したら受信したデータを、失敗したら-1を返す。
+ * 成功と判定したら受信したデータを、失敗ｗ検出したら-1を返す。
  */
 int usbio_io_8bits(void *hardware_data, int out);
 
