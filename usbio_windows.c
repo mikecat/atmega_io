@@ -149,7 +149,22 @@ int usbio_stop(avrio_t *avrio) {
 }
 
 int usbio_io_8bits(void *hardware_data, int out) {
-	return -1;
+	hid_t *hid;
+	int i;
+	int input = 0;
+	if (hardware_data == NULL) return -1;
+	hid = (hid_t*)hardware_data;
+	for (i = 7; i >= 0; i--) {
+		int raw_input;
+		if (!inputAndOutput(hid->hDevice, ((out >> i) & 1) << hid->sout_port, NULL)) return -1;
+		Sleep(1);
+		if (!inputAndOutput(hid->hDevice,
+			(((out >> i) & 1) << hid->sout_port) | (1 << hid->clock_port), &raw_input)) return -1;
+		Sleep(1);
+		if ((raw_input >> hid->sin_port) & 1) input |= (1 << i);
+	}
+	if (!inputAndOutput(hid->hDevice, 0, NULL)) return -1;
+	return input;
 }
 
 int usbio_reset(void *hardware_data) {
