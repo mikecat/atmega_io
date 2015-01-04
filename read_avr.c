@@ -5,14 +5,14 @@
 
 int main(int argc, char *argv[]) {
 	unsigned int *data;
-	int page_size;
+	int start_addr;
 	int read_size;
 	avrio_t avrio;
 	int signature[4];
 	int lock, fuse, fuse_high, extended_fuse, calibration;
-	if (argc != 4 || sscanf(argv[1], "%d", &page_size) != 1 ||
+	if (argc != 4 || sscanf(argv[1], "%d", &start_addr) != 1 ||
 	sscanf(argv[2], "%d", &read_size) != 1) {
-		fprintf(stderr, "Usage: %s page_size read_size out_file\n",
+		fprintf(stderr, "Usage: %s start_addr read_size out_file\n\n",
 			argc > 0 ? argv[0] : "read_avr");
 		fputs("serial out   (MOSI) : J1-7\n", stderr);
 		fputs("serial in    (MISO) : J2-0\n", stderr);
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 	}
 	data = malloc(sizeof(unsigned int) * read_size);
 	if (data != NULL) {
-		if (read_program(&avrio, data, 0, read_size) == AVRIO_SUCCESS) {
+		if (read_program(&avrio, data, start_addr, read_size) == AVRIO_SUCCESS) {
 			FILE* fp;
 			int i;
 			fp = fopen(argv[3], "wb");
