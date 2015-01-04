@@ -11,7 +11,7 @@
 
 typedef struct {
 	HANDLE hDevice;
-	int sin_port, sout_port, reset_port;
+	int sin_port, sout_port, clock_port, reset_port;
 } hid_t;
 
 static int openHID(HANDLE *hHid, int vendor_id, const int product_ids[], int product_id_num) {
@@ -104,7 +104,8 @@ static int inputAndOutput(HANDLE hUsbIO,int writeData,int *readData) {
 	return 1;
 }
 
-int usbio_init(avrio_t *avrio, int sin_port, int sout_port, int reset_port) {
+int usbio_init(avrio_t *avrio,
+int sin_port, int sout_port, int clock_port, int reset_port) {
 	static const int vendor_id = 0x1352;
 	static const int product_id[2] = {0x120, 0x121};
 	static const int product_id_num = 2;
@@ -112,8 +113,9 @@ int usbio_init(avrio_t *avrio, int sin_port, int sout_port, int reset_port) {
 	hid_t *hid;
 	if (avrio == NULL) return 0;
 	if (sin_port < 0 || PORT_NUM <= sin_port || sout_port < 0 || PORT_NUM <= sout_port ||
-	reset_port < 0 || PORT_NUM <= reset_port || sin_port == sout_port ||
-	sout_port == reset_port || reset_port == sin_port) {
+	reset_port < 0 || PORT_NUM <= reset_port || clock_port < 0 || PORT_NUM <= clock_port ||
+	sin_port == sout_port || sin_port == clock_port || sin_port == reset_port ||
+	sout_port == clock_port || sout_port == reset_port || clock_port == reset_port) {
 		/* 無効なポートまたはポートが被っている */
 		return 0;
 	}
@@ -127,6 +129,7 @@ int usbio_init(avrio_t *avrio, int sin_port, int sout_port, int reset_port) {
 	hid->hDevice = hUsbIO;
 	hid->sin_port = sin_port;
 	hid->sout_port = sout_port;
+	hid->clock_port = clock_port;
 	hid->reset_port = reset_port;
 	avrio->hardware_data = (void*)hid;
 	avrio->io_8bits = usbio_io_8bits;

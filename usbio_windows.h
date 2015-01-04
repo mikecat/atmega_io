@@ -6,7 +6,8 @@
 /* USB-IO2.0を用いた通信を初期化する。
  * 成功と判定したら真、失敗を検出したら偽を返す。
  */
-int usbio_init(avrio_t *avrio, int sin_port, int sout_port, int reset_port);
+int usbio_init(avrio_t *avrio,
+	int sin_port, int sout_port, int clock_port, int reset_port);
 
 /* USB-IO2.0を用いた通信を終了する。
  * 成功と判定したら真、失敗を検出したら偽を返す。
