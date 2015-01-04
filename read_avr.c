@@ -4,6 +4,7 @@
 #include "avr_io.h"
 
 int main(int argc, char *argv[]) {
+	int buffer_size = 4;
 	unsigned int *data;
 	int start_addr;
 	int read_size;
@@ -45,24 +46,31 @@ int main(int argc, char *argv[]) {
 	}
 	data = malloc(sizeof(unsigned int) * read_size);
 	if (data != NULL) {
-		if (read_program(&avrio, data, start_addr, read_size) == AVRIO_SUCCESS) {
-			FILE* fp;
-			int i;
-			fp = fopen(argv[3], "wb");
-			if (fp == NULL) {
-				fputs("fopen error\n", stderr);
-			} else {
-				for (i = 0; i < read_size; i++) {
-					unsigned char write_data[2];
-					write_data[0] = data[i] & 0xff;
-					write_data[1] = (data[i] >> 8) & 0xff;
-					fwrite(write_data, sizeof(write_data[0]), 2, fp);
-				}
-				fclose(fp);
-			}
+		FILE* fp;
+		int i;
+		fp = fopen(argv[3], "wb");
+		if (fp == NULL) {
+			fputs("fopen error\n", stderr);
 		} else {
-			fputs("read_program error\n", stderr);
+			while (read_size > 0) {
+				int current_read_size = read_size;
+				if (current_read_size > buffer_size) current_read_size = buffer_size;
+				if (read_program(&avrio, data, start_addr, current_read_size) == AVRIO_SUCCESS) {
+					for (i = 0; i < current_read_size; i++) {
+						unsigned char write_data[2];
+						write_data[0] = data[i] & 0xff;
+						write_data[1] = (data[i] >> 8) & 0xff;
+						fwrite(write_data, sizeof(write_data[0]), 2, fp);
+					}
+				} else {
+					fputs("read_program error\n", stderr);
+				}
+				read_size -= current_read_size;
+				start_addr += current_read_size;
+				fprintf(stderr, "reading program... (%d words left)\n", read_size);
+			}
 		}
+		fclose(fp);
 		free(data);
 	} else {
 		fputs("malloc error\n", stderr);
