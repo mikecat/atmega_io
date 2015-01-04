@@ -13,7 +13,7 @@ static int send_programming_enable(const avrio_t *func) {
 	int i;
 	if (func == NULL) return AVRIO_INVALID_PARAMETER;
 	for (i = 0; i < 4; i++) {
-		in_seq[i] = (func->io_8bits)(out_seq[i]);
+		in_seq[i] = (func->io_8bits)(func->hardware_data, out_seq[i]);
 		if (in_seq[i] < 0) return AVRIO_CONTROLLER_ERROR;
 	}
 	return in_seq[2] == 0x53 ? AVRIO_SUCCESS : AVRIO_PROGRAMMING_ENABLE_ERROR;
@@ -37,7 +37,7 @@ static int wait_operation(const avrio_t *func) {
 		if (ret != AVRIO_SUCCESS) return ret;
 		/* ポーリングを行う */
 		for (i = 0; i < 4; i++) {
-			in_seq[i] = (func->io_8bits)(out_seq[i]);
+			in_seq[i] = (func->io_8bits)(func->hardware_data, out_seq[i]);
 			if (in_seq[i] < 0) return AVRIO_CONTROLLER_ERROR;
 		}
 	} while ((in_seq[3] & 1) != 0);
@@ -54,7 +54,7 @@ int read_signature_byte(const avrio_t *func, int *out) {
 	for (i = 0; i < 3; i++) {
 		int ret = 0;
 		for (j = 0; j < 4; j++) {
-			ret = (func->io_8bits)(out_seq[j]);
+			ret = (func->io_8bits)(func->hardware_data, out_seq[j]);
 			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 		}
 		out_seq[2]++;
@@ -85,7 +85,7 @@ int *fuse_high_bits, int *extended_fuse_bits, int *calibration_byte) {
 		int ret = 0;
 		if (ptr[i] == NULL) continue;
 		for (j = 0; j < 4; j++) {
-			ret = (func->io_8bits)(out_seq[i][j]);
+			ret = (func->io_8bits)(func->hardware_data, out_seq[i][j]);
 			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 		}
 		*ptr[i] = ret;
@@ -113,13 +113,13 @@ unsigned int start_addr, unsigned int data_size) {
 		out_seq[1] = ((start_addr + i) >> 8) & 0xff;
 		out_seq[2] = (start_addr + i) & 0xff;
 		for (j = 0; j < 4; j++) {
-			ret1 = (func->io_8bits)(out_seq[j]);
+			ret1 = (func->io_8bits)(func->hardware_data, out_seq[j]);
 			if (ret1 < 0) return AVRIO_CONTROLLER_ERROR;
 		}
 		/* High byteを読み込む */
 		out_seq[0] = 0x28;
 		for (j = 0; j < 4; j++) {
-			ret2 = (func->io_8bits)(out_seq[j]);
+			ret2 = (func->io_8bits)(func->hardware_data, out_seq[j]);
 			if (ret2 < 0) return AVRIO_CONTROLLER_ERROR;
 		}
 		/* 合体して格納する */
@@ -145,7 +145,7 @@ unsigned int start_addr, unsigned int data_size) {
 		out_seq[1] = ((start_addr + i) >> 8) & 0x03;
 		out_seq[2] = (start_addr + i) & 0xff;
 		for (j = 0; j < 4; j++) {
-			ret = (func->io_8bits)(out_seq[j]);
+			ret = (func->io_8bits)(func->hardware_data, out_seq[j]);
 			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 		}
 		data_out[i] = ret;
@@ -160,7 +160,7 @@ int chip_erase(const avrio_t *func) {
 	spe_ret = send_programming_enable(func);
 	if (spe_ret != AVRIO_SUCCESS) return spe_ret;
 	for (i = 0; i < 4; i++) {
-		int ret = (func->io_8bits)(out_seq[i]);
+		int ret = (func->io_8bits)(func->hardware_data, out_seq[i]);
 		if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 	}
 	return wait_operation(func);
@@ -183,7 +183,7 @@ int fuse_high_bits, int extended_fuse_bits) {
 		if (out_seq[i][3] < 0) continue;
 		/* 書き込みを行う */
 		for (j = 0; j < 4; j++) {
-			ret = (func->io_8bits)(out_seq[i][j]);
+			ret = (func->io_8bits)(func->hardware_data, out_seq[i][j]);
 			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 		}
 		/* 完了を待つ */
@@ -214,14 +214,14 @@ unsigned int start_addr, unsigned int data_size, unsigned int page_size) {
 		out_seq[2] = (start_addr + i) & 0xff;
 		out_seq[3] = data[i] & 0xff;
 		for (j = 0; j < 4; j++) {
-			ret = (func->io_8bits)(out_seq[j]);
+			ret = (func->io_8bits)(func->hardware_data, out_seq[j]);
 			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 		}
 		/* High byteをloadする */
 		out_seq[0] = 0x48;
 		out_seq[3] = (data[i] >> 8) & 0xff;
 		for (j = 0; j < 4; j++) {
-			ret = (func->io_8bits)(out_seq[j]);
+			ret = (func->io_8bits)(func->hardware_data, out_seq[j]);
 			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 		}
 		/* データの終わりまたはページの区切り */
@@ -231,7 +231,7 @@ unsigned int start_addr, unsigned int data_size, unsigned int page_size) {
 			out_seq[1] = ((start_addr + i) >> 8) & 0xff;
 			out_seq[3] = 0x00;
 			for (j = 0; j < 4; j++) {
-				ret = (func->io_8bits)(out_seq[j]);
+				ret = (func->io_8bits)(func->hardware_data, out_seq[j]);
 				if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 			}
 			/* 完了を待つ */
@@ -262,7 +262,7 @@ unsigned int start_addr, unsigned int data_size) {
 		out_seq[2] = (start_addr + i) & 0x03;
 		out_seq[3] = data[i] & 0xff;
 		for (j = 0; j < 4; j++) {
-			ret = (func->io_8bits)(out_seq[j]);
+			ret = (func->io_8bits)(func->hardware_data, out_seq[j]);
 			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 		}
 		/* データの終わりまたはページの区切り */
@@ -273,7 +273,7 @@ unsigned int start_addr, unsigned int data_size) {
 			out_seq[2] = (start_addr + i) & 0xFC;
 			out_seq[3] = 0x00;
 			for (j = 0; j < 4; j++) {
-				ret = (func->io_8bits)(out_seq[j]);
+				ret = (func->io_8bits)(func->hardware_data, out_seq[j]);
 				if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 			}
 			/* 完了を待つ */

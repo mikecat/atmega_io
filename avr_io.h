@@ -3,10 +3,12 @@
 
 /* AVRの読み書きに必要な操作を行う関数の情報を持つ構造体 */
 typedef struct {
+	/* 各ハードウェア操作プログラム定義のデータ */
+	void *hardware_data;
 	/* 1オクテット読み書きする関数
 	 * 成功したら読み込んだ値(0以上255以下)、失敗したら-1を返す。
 	 */
-	int (*io_8bits)(int out);
+	int (*io_8bits)(void *hardware_data, int out);
 } avrio_t;
 
 /* エラーコード */
