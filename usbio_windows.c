@@ -134,7 +134,15 @@ int usbio_init(avrio_t *avrio, int sin_port, int sout_port, int reset_port) {
 }
 
 int usbio_stop(avrio_t *avrio) {
-	return 0;
+	hid_t *hid;
+	HANDLE hDevice;
+	if (avrio == NULL) return 0;
+	hid = (hid_t*)avrio->hardware_data;
+	if (hid == NULL) return 0;
+	hDevice = hid->hDevice;
+	free(hid);
+	if (!CloseHandle(hid->hDevice)) return 0;
+	return 1;
 }
 
 int usbio_io_8bits(void *hardware_data, int out) {
