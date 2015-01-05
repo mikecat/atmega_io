@@ -156,11 +156,11 @@ int usbio_io_8bits(void *hardware_data, int out) {
 	hid = (hid_t*)hardware_data;
 	for (i = 7; i >= 0; i--) {
 		int raw_input;
+		/* クロックをLOWにして出力を設定する */
 		if (!inputAndOutput(hid->hDevice, ((out >> i) & 1) << hid->sout_port, NULL)) return -1;
-		Sleep(1);
+		/* クロックをHIGHにして入力を読み込む */
 		if (!inputAndOutput(hid->hDevice,
 			(((out >> i) & 1) << hid->sout_port) | (1 << hid->clock_port), &raw_input)) return -1;
-		Sleep(1);
 		if ((raw_input >> hid->sin_port) & 1) input |= (1 << i);
 	}
 	if (!inputAndOutput(hid->hDevice, 0, NULL)) return -1;
