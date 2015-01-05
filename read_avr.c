@@ -64,6 +64,7 @@ int main(int argc, char *argv[]) {
 					}
 				} else {
 					fputs("read_program error\n", stderr);
+					break;
 				}
 				read_size -= current_read_size;
 				start_addr += current_read_size;
