@@ -2,6 +2,18 @@
 #include <limits.h>
 #include "avr_io.h"
 
+int disconnect(avrio_t *func) {
+	if (func == NULL) return AVRIO_INVALID_PARAMETER;
+	if (!(func->disconnect)(func->hardware_data)) return AVRIO_CONTROLLER_ERROR;
+	return AVRIO_SUCCESS;
+}
+
+int reset(const avrio_t *func) {
+	if (func == NULL) return AVRIO_INVALID_PARAMETER;
+	if (!(func->reset)(func->hardware_data)) return AVRIO_CONTROLLER_ERROR;
+	return AVRIO_SUCCESS;
+}
+
 /**
  * Programming Enableを送信する
  * @param func 利用する関数が格納された構造体へのポインタ

@@ -5,6 +5,14 @@
 typedef struct {
 	/* 各ハードウェア操作プログラム定義のデータ */
 	void *hardware_data;
+	/* 切断する関数
+	 * 成功と判定したら真、失敗を検出したら偽を返す。
+	 */
+	int (*disconnect)(void *hardware_data);
+	/* リセットする関数
+	 * 成功と判定したら真、失敗を検出したら偽を返す。
+	 */
+	int (*reset)(void *hardware_data);
 	/* 1オクテット読み書きする関数
 	 * 成功と判定したら読み込んだ値(0以上255以下)、失敗を検出したら-1を返す。
 	 */
@@ -22,6 +30,20 @@ enum {
 	/* Programming Enableで接続失敗を検出した */
 	AVRIO_PROGRAMMING_ENABLE_ERROR
 };
+
+/**
+ * 切断を行う。
+ * @param func 利用する関数が格納された構造体へのポインタ
+ * @return エラーコード
+ */
+int disconnect(avrio_t *func);
+
+/**
+ * リセット操作を行う。
+ * @param func 利用する関数が格納された構造体へのポインタ
+ * @return エラーコード
+ */
+int reset(const avrio_t *func);
 
 /**
  * Signature Byteを読み込む。

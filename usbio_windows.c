@@ -132,15 +132,17 @@ int sin_port, int sout_port, int clock_port, int reset_port) {
 	hid->clock_port = clock_port;
 	hid->reset_port = reset_port;
 	avrio->hardware_data = (void*)hid;
+	avrio->disconnect = usbio_stop;
+	avrio->reset = usbio_reset;
 	avrio->io_8bits = usbio_io_8bits;
 	return 1;
 }
 
-int usbio_stop(avrio_t *avrio) {
+int usbio_stop(void *hardware_data) {
 	hid_t *hid;
 	HANDLE hDevice;
-	if (avrio == NULL) return 0;
-	hid = (hid_t*)avrio->hardware_data;
+	if (hardware_data == NULL) return 0;
+	hid = (hid_t*)hardware_data;
 	if (hid == NULL) return 0;
 	hDevice = hid->hDevice;
 	free(hid);

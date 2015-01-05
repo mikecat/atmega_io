@@ -25,8 +25,8 @@ int main(int argc, char *argv[]) {
 		fputs("usbio_init error\n", stderr);
 		return 1;
 	}
-	if (!usbio_reset(avrio.hardware_data)) {
-		fputs("usbio_reset error\n", stderr);
+	if (reset(&avrio) != AVRIO_SUCCESS) {
+		fputs("reset error\n", stderr);
 	}
 	if (read_signature_byte(&avrio, signature) == AVRIO_SUCCESS) {
 		printf("signature = %02X %02X %02X\n",
@@ -75,8 +75,8 @@ int main(int argc, char *argv[]) {
 	} else {
 		fputs("malloc error\n", stderr);
 	}
-	if (!usbio_stop(&avrio)) {
-		fputs("usbio_stop error\n", stderr);
+	if (disconnect(&avrio) != AVRIO_SUCCESS) {
+		fputs("disconnect error\n", stderr);
 	}
 	return 0;
 }
