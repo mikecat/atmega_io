@@ -107,7 +107,7 @@ static int inputAndOutput(HANDLE hUsbIO,int writeData,int *readData) {
 /* USB-IO2.0を用いた通信を終了する。
  * 成功と判定したら真、失敗を検出したら偽を返す。
  */
-static int usbio_stop(void *hardware_data) {
+static int usbio_disconnect(void *hardware_data) {
 	hid_t *hid;
 	HANDLE hDevice;
 	if (hardware_data == NULL) return 0;
@@ -185,7 +185,7 @@ int sin_port, int sout_port, int clock_port, int reset_port) {
 	hid->clock_port = clock_port;
 	hid->reset_port = reset_port;
 	avrio->hardware_data = (void*)hid;
-	avrio->disconnect = usbio_stop;
+	avrio->disconnect = usbio_disconnect;
 	avrio->reset = usbio_reset;
 	avrio->io_8bits = usbio_io_8bits;
 	return 1;
