@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "usbio_windows.h"
 #include "avr_io.h"
+#include "progress_bar.h"
 
 int main(int argc, char *argv[]) {
 	int buffer_size = 4;
@@ -47,11 +48,14 @@ int main(int argc, char *argv[]) {
 	data = malloc(sizeof(unsigned int) * read_size);
 	if (data != NULL) {
 		FILE* fp;
+		progress_t prog;
 		int i;
 		fp = fopen(argv[3], "wb");
 		if (fp == NULL) {
 			fputs("fopen error\n", stderr);
 		} else {
+			int initial_read_size = read_size;
+			init_progress(&prog, initial_read_size);
 			while (read_size > 0) {
 				int current_read_size = read_size;
 				if (current_read_size > buffer_size) current_read_size = buffer_size;
@@ -68,8 +72,9 @@ int main(int argc, char *argv[]) {
 				}
 				read_size -= current_read_size;
 				start_addr += current_read_size;
-				fprintf(stderr, "reading program... (%d words left)\n", read_size);
+				update_progress(&prog, initial_read_size - read_size);
 			}
+			fputc('\n', stderr);
 		}
 		fclose(fp);
 		free(data);
