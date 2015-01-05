@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
 	unsigned int *data;
 	int start_addr;
 	int read_size;
-	avrio_t avrio;
+	avrio_t *avrio;
 	int signature[4];
 	int lock, fuse, fuse_high, extended_fuse, calibration;
 	if (argc != 4 || sscanf(argv[1], "%d", &start_addr) != 1 ||
@@ -21,20 +21,20 @@ int main(int argc, char *argv[]) {
 		fputs("reset               : J1-5\n", stderr);
 		return 1;
 	}
-	if (!usbio_init(&avrio, 8, 7, 6, 5)) {
+	if ((avrio = usbio_init(8, 7, 6, 5)) == NULL) {
 		fputs("usbio_init error\n", stderr);
 		return 1;
 	}
-	if (reset(&avrio) != AVRIO_SUCCESS) {
+	if (reset(avrio) != AVRIO_SUCCESS) {
 		fputs("reset error\n", stderr);
 	}
-	if (read_signature_byte(&avrio, signature) == AVRIO_SUCCESS) {
+	if (read_signature_byte(avrio, signature) == AVRIO_SUCCESS) {
 		printf("signature = %02X %02X %02X\n",
 			signature[0], signature[1], signature[2]);
 	} else {
 		fputs("read_signature_byte error\n", stderr);
 	}
-	if (read_information(&avrio, &lock, &fuse, &fuse_high,
+	if (read_information(avrio, &lock, &fuse, &fuse_high,
 	&extended_fuse, &calibration) == AVRIO_SUCCESS) {
 		printf("Lock bits          = %02X\n", lock);
 		printf("Fuse bits          = %02X\n", fuse);
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 			while (read_size > 0) {
 				int current_read_size = read_size;
 				if (current_read_size > buffer_size) current_read_size = buffer_size;
-				if (read_program(&avrio, data, start_addr, current_read_size) == AVRIO_SUCCESS) {
+				if (read_program(avrio, data, start_addr, current_read_size) == AVRIO_SUCCESS) {
 					for (i = 0; i < current_read_size; i++) {
 						unsigned char write_data[2];
 						write_data[0] = data[i] & 0xff;
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 	} else {
 		fputs("malloc error\n", stderr);
 	}
-	if (disconnect(&avrio) != AVRIO_SUCCESS) {
+	if (disconnect(avrio) != AVRIO_SUCCESS) {
 		fputs("disconnect error\n", stderr);
 	}
 	return 0;

@@ -1,10 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <limits.h>
 #include "avr_io.h"
 
 int disconnect(avrio_t *func) {
 	if (func == NULL) return AVRIO_INVALID_PARAMETER;
 	if (!(func->disconnect)(func->hardware_data)) return AVRIO_CONTROLLER_ERROR;
+	free(func);
 	return AVRIO_SUCCESS;
 }
 

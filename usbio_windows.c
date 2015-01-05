@@ -157,28 +157,32 @@ static int usbio_reset(void *hardware_data) {
 	return 1;
 }
 
-int usbio_init(avrio_t *avrio,
-int sin_port, int sout_port, int clock_port, int reset_port) {
+avrio_t *usbio_init(int sin_port, int sout_port, int clock_port, int reset_port) {
 	static const int vendor_id = 0x1352;
 	static const int product_id[2] = {0x120, 0x121};
 	static const int product_id_num = 2;
 	HANDLE hUsbIO;
+	avrio_t *avrio;
 	hid_t *hid;
-	if (avrio == NULL) return 0;
 	if (sin_port < 0 || PORT_NUM <= sin_port || sout_port < 0 || PORT_NUM <= sout_port ||
 	reset_port < 0 || PORT_NUM <= reset_port || clock_port < 0 || PORT_NUM <= clock_port ||
 	sin_port == sout_port || sin_port == clock_port || sin_port == reset_port ||
 	sout_port == clock_port || sout_port == reset_port || clock_port == reset_port) {
 		/* 無効なポートまたはポートが被っている */
-		return 0;
+		return NULL;
 	}
 	/* USB-IO2.0を開く */
 	if(!openHID(&hUsbIO, vendor_id, product_id, product_id_num)) {
-		return 0;
+		return NULL;
 	}
 	/* 情報を格納する */
+	avrio = malloc(sizeof(avrio_t));
+	if (avrio == NULL) return NULL;
 	hid = malloc(sizeof(hid_t));
-	if (hid == NULL) return 0;
+	if (hid == NULL) {
+		free(avrio);
+		return NULL;
+	}
 	hid->hDevice = hUsbIO;
 	hid->sin_port = sin_port;
 	hid->sout_port = sout_port;
@@ -188,5 +192,5 @@ int sin_port, int sout_port, int clock_port, int reset_port) {
 	avrio->disconnect = usbio_disconnect;
 	avrio->reset = usbio_reset;
 	avrio->io_8bits = usbio_io_8bits;
-	return 1;
+	return avrio;
 }
