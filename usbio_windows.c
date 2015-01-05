@@ -104,6 +104,59 @@ static int inputAndOutput(HANDLE hUsbIO,int writeData,int *readData) {
 	return 1;
 }
 
+/* USB-IO2.0を用いた通信を終了する。
+ * 成功と判定したら真、失敗を検出したら偽を返す。
+ */
+static int usbio_stop(void *hardware_data) {
+	hid_t *hid;
+	HANDLE hDevice;
+	if (hardware_data == NULL) return 0;
+	hid = (hid_t*)hardware_data;
+	if (hid == NULL) return 0;
+	hDevice = hid->hDevice;
+	free(hid);
+	if (!CloseHandle(hDevice)) return 0;
+	return 1;
+}
+
+/* USB-IO2.0を用いて8ビット送受信する。
+ * 成功と判定したら受信したデータを、失敗ｗ検出したら-1を返す。
+ */
+static int usbio_io_8bits(void *hardware_data, int out) {
+	hid_t *hid;
+	int i;
+	int input = 0;
+	if (hardware_data == NULL) return -1;
+	hid = (hid_t*)hardware_data;
+	for (i = 7; i >= 0; i--) {
+		int raw_input;
+		/* クロックをLOWにして出力を設定する */
+		if (!inputAndOutput(hid->hDevice, ((out >> i) & 1) << hid->sout_port, NULL)) return -1;
+		/* クロックをHIGHにして入力を読み込む */
+		if (!inputAndOutput(hid->hDevice,
+			(((out >> i) & 1) << hid->sout_port) | (1 << hid->clock_port), &raw_input)) return -1;
+		if ((raw_input >> hid->sin_port) & 1) input |= (1 << i);
+	}
+	if (!inputAndOutput(hid->hDevice, 0, NULL)) return -1;
+	return input;
+}
+
+/* USB-IO2.0を用いてリセットを行う。
+ * 成功と判定したら真、失敗を検出したら偽を返す。
+ */
+static int usbio_reset(void *hardware_data) {
+	HANDLE hDevice;
+	int reset_port;
+	if (hardware_data == NULL) return 0;
+	hDevice = ((hid_t*)hardware_data)->hDevice;
+	reset_port = ((hid_t*)hardware_data)->reset_port;
+	if (!inputAndOutput(hDevice, 1 << reset_port, NULL)) return 0;
+	Sleep(1);
+	if (!inputAndOutput(hDevice, 0, NULL)) return 0;
+	Sleep(20);
+	return 1;
+}
+
 int usbio_init(avrio_t *avrio,
 int sin_port, int sout_port, int clock_port, int reset_port) {
 	static const int vendor_id = 0x1352;
@@ -135,49 +188,5 @@ int sin_port, int sout_port, int clock_port, int reset_port) {
 	avrio->disconnect = usbio_stop;
 	avrio->reset = usbio_reset;
 	avrio->io_8bits = usbio_io_8bits;
-	return 1;
-}
-
-int usbio_stop(void *hardware_data) {
-	hid_t *hid;
-	HANDLE hDevice;
-	if (hardware_data == NULL) return 0;
-	hid = (hid_t*)hardware_data;
-	if (hid == NULL) return 0;
-	hDevice = hid->hDevice;
-	free(hid);
-	if (!CloseHandle(hDevice)) return 0;
-	return 1;
-}
-
-int usbio_io_8bits(void *hardware_data, int out) {
-	hid_t *hid;
-	int i;
-	int input = 0;
-	if (hardware_data == NULL) return -1;
-	hid = (hid_t*)hardware_data;
-	for (i = 7; i >= 0; i--) {
-		int raw_input;
-		/* クロックをLOWにして出力を設定する */
-		if (!inputAndOutput(hid->hDevice, ((out >> i) & 1) << hid->sout_port, NULL)) return -1;
-		/* クロックをHIGHにして入力を読み込む */
-		if (!inputAndOutput(hid->hDevice,
-			(((out >> i) & 1) << hid->sout_port) | (1 << hid->clock_port), &raw_input)) return -1;
-		if ((raw_input >> hid->sin_port) & 1) input |= (1 << i);
-	}
-	if (!inputAndOutput(hid->hDevice, 0, NULL)) return -1;
-	return input;
-}
-
-int usbio_reset(void *hardware_data) {
-	HANDLE hDevice;
-	int reset_port;
-	if (hardware_data == NULL) return 0;
-	hDevice = ((hid_t*)hardware_data)->hDevice;
-	reset_port = ((hid_t*)hardware_data)->reset_port;
-	if (!inputAndOutput(hDevice, 1 << reset_port, NULL)) return 0;
-	Sleep(1);
-	if (!inputAndOutput(hDevice, 0, NULL)) return 0;
-	Sleep(20);
 	return 1;
 }
