@@ -3,6 +3,16 @@
 
 #include <stdio.h>
 
+enum {
+	LOAD_HEX_SUCCESS = 0, /* 成功 */
+	LOAD_HEX_SIZE_OVER, /* 確保された範囲よりデータが大きい */
+	LOAD_HEX_IO_ERROR, /* ファイル操作エラー */
+	LOAD_HEX_INVALID_PARAMETER, /* 引数が不正 */
+	LOAD_HEX_INVALID_CHAR, /* ファイルに不正な文字が含まれる */
+	LOAD_HEX_CHECKSUM_ERROR, /* チェックサムが一致しない */
+	LOAD_HEX_UNEXPECTED_EOF /* 予期せぬファイル終端 */
+};
+
 /**
  * ファイルハンドルからHEXファイルを読み込む。
  * @param out ファイルのデータを書き込むバッファ
