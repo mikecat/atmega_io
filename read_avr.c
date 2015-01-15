@@ -27,8 +27,8 @@ int main(int argc, char *argv[]) {
 		fputs("usbio_init error\n", stderr);
 		return 1;
 	}
-	if (reset(avrio) != AVRIO_SUCCESS) {
-		fputs("reset error\n", stderr);
+	if ((error_code = reset(avrio)) != AVRIO_SUCCESS) {
+		fprintf(stderr, "reset error %d\n", error_code);
 	}
 	if ((error_code = read_signature_byte(avrio, signature)) == AVRIO_SUCCESS) {
 		printf("signature = %02X %02X %02X\n",
