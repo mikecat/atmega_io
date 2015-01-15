@@ -19,11 +19,14 @@ int main(int argc, char *argv[]) {
 	const char *input_file = NULL;
 	int command_line_error = 0;
 	int show_help = 0;
-	int i;
+	int i, j;
 	FILE* fp;
 	int ret;
 	avrio_t *avrio;
 	int signature[4];
+	int pages_to_write = 0;
+	int written_pages = 0;
+	progress_t progress;
 	/* コマンドライン引数を読み込む */
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--lock-bits") == 0 || strcmp(argv[i], "-l") == 0) {
@@ -160,6 +163,37 @@ int main(int argc, char *argv[]) {
 	lock_bits, fuse_bits, fuse_high_bits, extended_fuse_bits)) != AVRIO_SUCCESS) {
 		fprintf(stderr, "error %d on write_information\n", ret);
 	}
+
+	/* 書き込むべきペーシ数を数える */
+	for (i = 0; i + page_size <= DATA_BUFFER_SIZE; i += page_size) {
+		for (j = 0; j < page_size; j++) {
+			if (data_words[i + j] != 0xffff) {
+				pages_to_write++;
+				break;
+			}
+		}
+	}
+	/* 実際に書き込みを行う */
+	init_progress(&progress, pages_to_write);
+	for (i = 0; i + page_size <= DATA_BUFFER_SIZE; i += page_size) {
+		int to_write = 0;
+		for (j = 0; j < page_size; j++) {
+			if (data_words[i + j] != 0xffff) {
+				to_write = 1;
+				break;
+			}
+		}
+		if (to_write) {
+			if ((ret = write_program(avrio, data_words + i, i, page_size, page_size)) != AVRIO_SUCCESS) {
+				fprintf(stderr, "error %d on write_program\n", ret);
+				break;
+			}
+			written_pages++;
+			update_progress(&progress, written_pages);
+		}
+	}
+	fputc('\n', stderr);
+
 	if ((ret = disconnect(avrio)) != AVRIO_SUCCESS) {
 		fprintf(stderr, "disconnect error %d\n", ret);
 	}
