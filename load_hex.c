@@ -25,7 +25,7 @@ static int hex_to_int(int c) {
 }
 
 /* 16進数2桁のバイトデータを読み込む */
-static int load_hex_byte(int *in, FILE *fp) {
+static int load_hex_byte(int *out, FILE *fp) {
 	int ret = 0;
 	int in_left = 2;
 	int in_char;
@@ -34,14 +34,14 @@ static int load_hex_byte(int *in, FILE *fp) {
 		do {
 			in_char = getc(fp);
 			if (ferror(fp)) return LOAD_HEX_IO_ERROR;
-			if (in == EOF) return LOAD_HEX_UNEXPECTED_EOF;
+			if (in_char == EOF) return LOAD_HEX_UNEXPECTED_EOF;
 		} while (isspace(in_char));
 		/* 数値に反映する */
 		if (!isxdigit(in_char)) return LOAD_HEX_INVALID_CHAR;
 		ret = (ret << 4) | hex_to_int(in_char);
 		in_left--;
 	}
-	*in = ret;
+	*out = ret;
 	return LOAD_HEX_SUCCESS;
 }
 
