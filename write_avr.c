@@ -20,6 +20,8 @@ int main(int argc, char *argv[]) {
 	int command_line_error = 0;
 	int show_help = 0;
 	int i;
+	FILE* fp;
+	int ret;
 	/* コマンドライン引数を読み込む */
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--lock-bits") == 0 || strcmp(argv[i], "-l") == 0) {
@@ -110,6 +112,27 @@ int main(int argc, char *argv[]) {
 		fputs("serial clock (SCK)  : J1-6\n", stderr);
 		fputs("reset               : J1-5\n", stderr);
 		return command_line_error ? 1 : 0;
+	}
+
+	/* ファイルを読み込む */
+	if (input_file == NULL || strcmp(input_file, "-") == 0) {
+		fp = stdin;
+	} else {
+		fp = fopen(input_file, "r");
+		if (fp == NULL) {
+			fprintf(stderr, "file \"%s\" open error\n", input_file);
+			return 1;
+		}
+	}
+	ret = load_hex(data, sizeof(data), fp);
+	if (fp != stdin) fclose(fp);
+	if (ret != LOAD_HEX_SUCCESS) {
+		fprintf(stderr, "error %d on load_hex\n", ret);
+		return 1;
+	}
+	if ((ret != chars_to_words(data_words, data, sizeof(data))) != LOAD_HEX_SUCCESS) {
+		fprintf(stderr, "error %d on chars_to_words\n", ret);
+		return 1;
 	}
 	return 0;
 }
