@@ -183,10 +183,10 @@ int chip_erase(const avrio_t *func) {
 int write_information(const avrio_t *func, int lock_bits, int fuse_bits,
 int fuse_high_bits, int extended_fuse_bits) {
 	int out_seq[4][4] = {
-		{0xAC, 0xE0, 0x00, lock_bits},
 		{0xAC, 0xA0, 0x00, fuse_bits},
 		{0xAC, 0xA8, 0x00, fuse_high_bits},
-		{0xAC, 0xA4, 0x00, extended_fuse_bits}
+		{0xAC, 0xA4, 0x00, extended_fuse_bits},
+		{0xAC, 0xE0, 0x00, lock_bits}
 	};
 	int spe_ret;
 	int i, j;
