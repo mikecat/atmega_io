@@ -118,7 +118,7 @@ int load_hex(char *out, int out_size, FILE *fp) {
 		/* End Of Fileなら終了する */
 		if (data_type == 0x01) break;
 	}
-	return LOAD_HEX_SUCCESS;
+	return size_over_flag ? LOAD_HEX_SIZE_OVER : LOAD_HEX_SUCCESS;
 }
 
 int chars_to_words(unsigned int *out, const char *in, int in_bytes) {
