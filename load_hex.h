@@ -10,7 +10,7 @@
  * @param fp 読み込みに使用するファイルハンドル
  * @return エラーコード
  */
-int read_hex(char *out, int out_size, FILE *fp);
+int load_hex(char *out, int out_size, FILE *fp);
 
 /**
  * char型のデータ配列をワード配列に変換する。
