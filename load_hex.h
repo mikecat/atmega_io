@@ -15,6 +15,9 @@ enum {
 
 /**
  * ファイルハンドルからHEXファイルを読み込む。
+ * out_sizeは非負でなければならない。
+ * out_size番地以上にデータを書き込もうとされた場合、
+ * かつ他のエラーが検出されない場合は、LOAD_HEX_SIZE_OVERが返される。
  * @param out ファイルのデータを書き込むバッファ
  * @param out_size outのバッファサイズ
  * @param fp 読み込みに使用するファイルハンドル
@@ -24,6 +27,7 @@ int load_hex(char *out, int out_size, FILE *fp);
 
 /**
  * char型のデータ配列をワード配列に変換する。
+ * in_bytesは非負の偶数でないといけない。
  * @param out 変換したデータを書き込むバッファ
  * @param in 変換するデータ
  * @param in_bytes inの要素数
