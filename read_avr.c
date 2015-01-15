@@ -12,6 +12,7 @@ int main(int argc, char *argv[]) {
 	avrio_t *avrio;
 	int signature[4];
 	int lock, fuse, fuse_high, extended_fuse, calibration;
+	int error_code;
 	if (argc != 4 || sscanf(argv[1], "%d", &start_addr) != 1 ||
 	sscanf(argv[2], "%d", &read_size) != 1) {
 		fprintf(stderr, "Usage: %s start_addr read_size out_file\n\n",
@@ -29,21 +30,21 @@ int main(int argc, char *argv[]) {
 	if (reset(avrio) != AVRIO_SUCCESS) {
 		fputs("reset error\n", stderr);
 	}
-	if (read_signature_byte(avrio, signature) == AVRIO_SUCCESS) {
+	if ((error_code = read_signature_byte(avrio, signature)) == AVRIO_SUCCESS) {
 		printf("signature = %02X %02X %02X\n",
 			signature[0], signature[1], signature[2]);
 	} else {
-		fputs("read_signature_byte error\n", stderr);
+		fprintf(stderr, "read_signature_byte error %d\n", error_code);
 	}
-	if (read_information(avrio, &lock, &fuse, &fuse_high,
-	&extended_fuse, &calibration) == AVRIO_SUCCESS) {
+	if ((error_code = read_information(avrio, &lock, &fuse, &fuse_high,
+	&extended_fuse, &calibration)) == AVRIO_SUCCESS) {
 		printf("Lock bits          = %02X\n", lock);
 		printf("Fuse bits          = %02X\n", fuse);
 		printf("Fuse High bits     = %02X\n", fuse_high);
 		printf("Extended Fuse Bits = %02X\n", extended_fuse);
 		printf("Calibration Byte   = %02X\n", calibration);
 	} else {
-		fputs("read_information error\n", stderr);
+		fprintf(stderr, "read_information error %d\n", error_code);
 	}
 	data = malloc(sizeof(unsigned int) * read_size);
 	if (data != NULL) {
@@ -59,7 +60,7 @@ int main(int argc, char *argv[]) {
 			while (read_size > 0) {
 				int current_read_size = read_size;
 				if (current_read_size > buffer_size) current_read_size = buffer_size;
-				if (read_program(avrio, data, start_addr, current_read_size) == AVRIO_SUCCESS) {
+				if ((error_code = read_program(avrio, data, start_addr, current_read_size)) == AVRIO_SUCCESS) {
 					for (i = 0; i < current_read_size; i++) {
 						unsigned char write_data[2];
 						write_data[0] = data[i] & 0xff;
@@ -67,7 +68,7 @@ int main(int argc, char *argv[]) {
 						fwrite(write_data, sizeof(write_data[0]), 2, fp);
 					}
 				} else {
-					fputs("read_program error\n", stderr);
+					fprintf(stderr, "read_program error %d\n", error_code);
 					break;
 				}
 				read_size -= current_read_size;
@@ -81,8 +82,8 @@ int main(int argc, char *argv[]) {
 	} else {
 		fputs("malloc error\n", stderr);
 	}
-	if (disconnect(avrio) != AVRIO_SUCCESS) {
-		fputs("disconnect error\n", stderr);
+	if ((error_code = disconnect(avrio)) != AVRIO_SUCCESS) {
+		fprintf(stderr, "disconnect error %d\n", error_code);
 	}
 	return 0;
 }
