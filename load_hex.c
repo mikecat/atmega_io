@@ -132,3 +132,53 @@ int chars_to_words(unsigned int *out, const char *in, int in_bytes) {
 	}
 	return LOAD_HEX_SUCCESS;
 }
+
+#ifdef LOAD_HEX_TEST
+/* 標準入力からHEXファイルを読み込み、標準出力に内容を出力する */
+int main(void) {
+	static char buffer[1024 * 1024];
+	static unsigned int buffer_int[1024 * 1024 / 2];
+	unsigned int i;
+	int prev_printed = 0;
+	int print_exists = 0;
+	int words_per_line = 8;
+	int ret;
+	for (i = 0; i < sizeof(buffer) / sizeof(buffer[0]); i++) buffer[i] = 0xff;
+	ret = load_hex(buffer, sizeof(buffer), stdin);
+	if (ret != LOAD_HEX_SUCCESS) {
+		fprintf(stderr, "error %d in load_hex\n", ret);
+		return 1;
+	}
+	ret = chars_to_words(buffer_int, buffer, sizeof(buffer));
+	if (ret != LOAD_HEX_SUCCESS) {
+		fprintf(stderr, "error %d in  chars_to_words\n", ret);
+		return 1;
+	}
+	for (i = 0; i < sizeof(buffer_int) / sizeof(buffer_int[0]); i++) {
+		if (i % words_per_line == 0) {
+			int print_it = 0;
+			int j;
+			for (j = 0; j < words_per_line; j++) {
+				if (buffer_int[i + j] != 0xffff) {
+					print_it = 1;
+					break;
+				}
+			}
+			if (!print_it) {
+				i += words_per_line - 1;
+				prev_printed = 0;
+				continue;
+			}
+			if (print_exists) putchar('\n');
+			if (!prev_printed) printf("address = %08X\n", i);
+		} else {
+			putchar(' ');
+		}
+		printf("%04X", buffer_int[i]);
+		prev_printed = 1;
+		print_exists = 1;
+	}
+	if (i % words_per_line == 0) putchar('\n');
+	return 0;
+}
+#endif
