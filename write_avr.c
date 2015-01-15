@@ -22,6 +22,8 @@ int main(int argc, char *argv[]) {
 	int i;
 	FILE* fp;
 	int ret;
+	avrio_t *avrio;
+	int signature[4];
 	/* コマンドライン引数を読み込む */
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--lock-bits") == 0 || strcmp(argv[i], "-l") == 0) {
@@ -133,6 +135,33 @@ int main(int argc, char *argv[]) {
 	if ((ret != chars_to_words(data_words, data, sizeof(data))) != LOAD_HEX_SUCCESS) {
 		fprintf(stderr, "error %d on chars_to_words\n", ret);
 		return 1;
+	}
+
+	/* 書き込み操作を実装する */
+	if ((avrio = usbio_init(8, 7, 6, 5)) == NULL) {
+		fputs("error on usbio_init\n", stderr);
+		return 1;
+	}
+	if ((ret = reset(avrio)) != AVRIO_SUCCESS) {
+		fprintf(stderr, "error %d on reset\n", ret);
+	}
+	if ((ret = read_signature_byte(avrio, signature)) == AVRIO_SUCCESS) {
+		printf("signature = %02X %02X %02X\n",
+			signature[0], signature[1], signature[2]);
+	} else {
+		fprintf(stderr, "read_signature_byte error %d\n", ret);
+	}
+	if (do_chip_erase) {
+		if ((ret = chip_erase(avrio)) != AVRIO_SUCCESS) {
+			fprintf(stderr, "error %d on chip_erase\n", ret);
+		}
+	}
+	if ((ret = write_information(avrio,
+	lock_bits, fuse_bits, fuse_high_bits, extended_fuse_bits)) != AVRIO_SUCCESS) {
+		fprintf(stderr, "error %d on write_information\n", ret);
+	}
+	if ((ret = disconnect(avrio)) != AVRIO_SUCCESS) {
+		fprintf(stderr, "disconnect error %d\n", ret);
 	}
 	return 0;
 }
