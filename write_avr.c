@@ -103,6 +103,12 @@ int main(int argc, char *argv[]) {
 		fputs("--chip-erase : do chip erase before writing (default)\n", stderr);
 		fputs("--no-chip-erase : don't do chip erase before writing\n", stderr);
 		fputs("--help / -h : show this help\n", stderr);
+
+		fputs("\nconnection between USB-IO2.0 and AVR:\n", stderr);
+		fputs("serial out   (MOSI) : J1-7\n", stderr);
+		fputs("serial in    (MISO) : J2-0\n", stderr);
+		fputs("serial clock (SCK)  : J1-6\n", stderr);
+		fputs("reset               : J1-5\n", stderr);
 		return command_line_error ? 1 : 0;
 	}
 	return 0;
