@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
 		fputs("--fuse-high-bits <byte> / -fh <byte> : write Fuse High bits\n", stderr);
 		fputs("--extended-fuse-bits <byte> / -ef <byte> : write Extended Fuse bits\n", stderr);
 		fputs("--page-size <size> / -p <size> : set page size (default: 64)\n", stderr);
-		fputs("--input-file <file> / -i <file> : set input file (default: stdin)\n", stderr);
+		fputs("--input-file <file> / -f <file> : set hex file to write (default: none)\n", stderr);
 		fputs("--chip-erase : do chip erase before writing (default)\n", stderr);
 		fputs("--no-chip-erase : don't do chip erase before writing\n", stderr);
 		fputs("--validation / -v : do validation after writing\n", stderr);
@@ -128,24 +128,26 @@ int main(int argc, char *argv[]) {
 	}
 
 	/* ƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚Ş */
-	if (input_file == NULL || strcmp(input_file, "-") == 0) {
-		fp = stdin;
-	} else {
-		fp = fopen(input_file, "r");
-		if (fp == NULL) {
-			fprintf(stderr, "file \"%s\" open error\n", input_file);
+	if (input_file != NULL) {
+		if (strcmp(input_file, "-") == 0) {
+			fp = stdin;
+		} else {
+			fp = fopen(input_file, "r");
+			if (fp == NULL) {
+				fprintf(stderr, "file \"%s\" open error\n", input_file);
+				return 1;
+			}
+		}
+		for (i = 0; i < DATA_BUFFER_SIZE; i++) {
+			data[i] = 0xff;
+			data_words[i] = validation_words[i] = 0xffff;
+		}
+		ret = load_hex(data, sizeof(data), fp);
+		if (fp != stdin) fclose(fp);
+		if (ret != LOAD_HEX_SUCCESS) {
+			fprintf(stderr, "error %d on load_hex\n", ret);
 			return 1;
 		}
-	}
-	for (i = 0; i < DATA_BUFFER_SIZE; i++) {
-		data[i] = 0xff;
-		data_words[i] = validation_words[i] = 0xffff;
-	}
-	ret = load_hex(data, sizeof(data), fp);
-	if (fp != stdin) fclose(fp);
-	if (ret != LOAD_HEX_SUCCESS) {
-		fprintf(stderr, "error %d on load_hex\n", ret);
-		return 1;
 	}
 	if ((ret != chars_to_words(data_words, data, sizeof(data))) != LOAD_HEX_SUCCESS) {
 		fprintf(stderr, "error %d on chars_to_words\n", ret);
