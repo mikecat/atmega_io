@@ -214,6 +214,7 @@ int main(int argc, char *argv[]) {
 		int extended_fuse_bits_read, calibration_byte_read;
 		fputs("validating the data...\n", stderr);
 		init_progress(&progress, pages_to_write);
+		written_pages = 0;
 		for (i = 0; i + page_size <= DATA_BUFFER_SIZE; i += page_size) {
 			int to_write = 0;
 			for (j = 0; j < page_size; j++) {
