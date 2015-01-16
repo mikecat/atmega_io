@@ -128,6 +128,10 @@ int main(int argc, char *argv[]) {
 	}
 
 	/* ƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚Ş */
+	for (i = 0; i < DATA_BUFFER_SIZE; i++) {
+		data[i] = 0xff;
+		data_words[i] = validation_words[i] = 0xffff;
+	}
 	if (input_file != NULL) {
 		if (strcmp(input_file, "-") == 0) {
 			fp = stdin;
@@ -138,10 +142,6 @@ int main(int argc, char *argv[]) {
 				return 1;
 			}
 		}
-		for (i = 0; i < DATA_BUFFER_SIZE; i++) {
-			data[i] = 0xff;
-			data_words[i] = validation_words[i] = 0xffff;
-		}
 		ret = load_hex(data, sizeof(data), fp);
 		if (fp != stdin) fclose(fp);
 		if (ret != LOAD_HEX_SUCCESS) {
@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
 			return 1;
 		}
 	}
-	if ((ret != chars_to_words(data_words, data, sizeof(data))) != LOAD_HEX_SUCCESS) {
+	if ((ret = chars_to_words(data_words, data, sizeof(data))) != LOAD_HEX_SUCCESS) {
 		fprintf(stderr, "error %d on chars_to_words\n", ret);
 		return 1;
 	}
