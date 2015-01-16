@@ -129,6 +129,7 @@ int main(int argc, char *argv[]) {
 			return 1;
 		}
 	}
+	for (i = 0; i < DATA_BUFFER_SIZE; i++) data[i] = 0xff;
 	ret = load_hex(data, sizeof(data), fp);
 	if (fp != stdin) fclose(fp);
 	if (ret != LOAD_HEX_SUCCESS) {
