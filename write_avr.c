@@ -14,8 +14,10 @@ int main(int argc, char *argv[]) {
 	int extended_fuse_bits = -1;
 	int page_size = 64;
 	int do_chip_erase = 1;
+	int do_validation = 0;
 	static char data[DATA_BUFFER_SIZE];
 	static unsigned int data_words[DATA_BUFFER_SIZE];
+	static unsigned int validation_words[DATA_BUFFER_SIZE];
 	const char *input_file = NULL;
 	int command_line_error = 0;
 	int show_help = 0;
@@ -90,6 +92,10 @@ int main(int argc, char *argv[]) {
 			do_chip_erase = 1;
 		} else if (strcmp(argv[i], "--no-chip-erase") == 0) {
 			do_chip_erase = 0;
+		} else if (strcmp(argv[i], "--validation") == 0 || strcmp(argv[i], "-v") == 0) {
+			do_validation = 1;
+		} else if (strcmp(argv[i], "--no-validation") == 0) {
+			do_validation = 0;
 		} else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
 			show_help = 1;
 		} else {
@@ -109,6 +115,8 @@ int main(int argc, char *argv[]) {
 		fputs("--input-file <file> / -i <file> : set input file (default: stdin)\n", stderr);
 		fputs("--chip-erase : do chip erase before writing (default)\n", stderr);
 		fputs("--no-chip-erase : don't do chip erase before writing\n", stderr);
+		fputs("--validation / -v : do validation after writing\n", stderr);
+		fputs("--no-validation : don't do validation after writing (default)\n", stderr);
 		fputs("--help / -h : show this help\n", stderr);
 
 		fputs("\nconnection between USB-IO2.0 and AVR:\n", stderr);
@@ -175,6 +183,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	/* é¿ç€Ç…èëÇ´çûÇ›ÇçsÇ§ */
+	fputs("writing the data...\n", stderr);
 	init_progress(&progress, pages_to_write);
 	for (i = 0; i + page_size <= DATA_BUFFER_SIZE; i += page_size) {
 		int to_write = 0;
@@ -194,6 +203,55 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	fputc('\n', stderr);
+
+	if (do_validation) {
+		int checked = 0;
+		int mismatch = 0;
+		int lock_bits_read, fuse_bits_read, fuse_high_bits_read;
+		int extended_fuse_bits_read, calibration_byte_read;
+		fputs("validating the data...\n", stderr);
+		init_progress(&progress, pages_to_write);
+		for (i = 0; i + page_size <= DATA_BUFFER_SIZE; i += page_size) {
+			int to_write = 0;
+			for (j = 0; j < page_size; j++) {
+				if (data_words[i + j] != 0xffff) {
+					to_write = 1;
+					break;
+				}
+			}
+			if (to_write) {
+				if ((ret = read_program(avrio, validation_words + i, i, page_size)) != AVRIO_SUCCESS) {
+					fprintf(stderr, "error %d on read_program\n", ret);
+					break;
+				}
+				for (j = 0; j < page_size; j++) {
+					checked++;
+					if (data_words[i + j] != validation_words[i + j]) mismatch++;
+				}
+				written_pages++;
+				update_progress(&progress, written_pages);
+			}
+		}
+		fputc('\n', stderr);
+		puts("--- validation results ---");
+		printf("program: %d word(s) checked, %d mismatch(es) found.\n", checked, mismatch);
+		if ((ret = read_information(avrio,
+		&lock_bits_read, &fuse_bits_read, &fuse_high_bits_read,
+		&extended_fuse_bits_read, &calibration_byte_read)) == AVRIO_SUCCESS) {
+			puts("Fuse bits and Lock bits:");
+			printf("Lock bits = %02X%s\n", lock_bits_read,
+				(lock_bits >= 0 && lock_bits != lock_bits_read) ? " (mismatch)" : "");
+			printf("Fuse bits = %02X%s\n", fuse_bits_read,
+				(fuse_bits >= 0 && fuse_bits != fuse_bits_read) ? " (mismatch)" : "");
+			printf("Fuse High bits = %02X%s\n", fuse_high_bits_read,
+				(fuse_high_bits >= 0 && fuse_high_bits != fuse_high_bits_read) ? " (mismatch)" : "");
+			printf("Extended Fuse bits = %02X%s\n", extended_fuse_bits_read,
+				(extended_fuse_bits >= 0 && extended_fuse_bits != extended_fuse_bits_read) ? " (mismatch)" : "");
+			printf("Calibration Byte = %02X\n", calibration_byte_read);
+		} else {
+			fprintf(stderr, "read_information error %d\n", ret);
+		}
+	}
 
 	if ((ret = disconnect(avrio)) != AVRIO_SUCCESS) {
 		fprintf(stderr, "disconnect error %d\n", ret);
