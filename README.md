@@ -29,11 +29,11 @@ FuseやLockは1がunprogrammed、0がprogrammed
   * 0 : アプリケーションへのSPMでの書き込み禁止
 * BLB12
   * 1 : 制限なし
-  * 0 : ブートローダーへのSPMでの書き込み禁止
-* BLB11
-  * 1 : 制限なし
   * 0 : アプリケーションからのLPM(Load Program Memory命令)によるブートローダー読み込み禁止、
          Interrupt Vectorsがアプリケーションにある場合はブートローダーでの割り込み無効
+* BLB11
+  * 1 : 制限なし
+  * 0 : ブートローダーへのSPMでの書き込み禁止
 
 
 #### Extended Fuse Byte
