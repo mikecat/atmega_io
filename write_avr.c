@@ -41,34 +41,34 @@ int main(int argc, char *argv[]) {
 				fprintf(stderr, "missing argument for --lock-bits\n");
 				command_line_error = 1;
 			}
-		} else if (strcmp(argv[i], "--fuse-bits") == 0 || strcmp(argv[i], "-f") == 0) {
+		} else if (strcmp(argv[i], "--fuse-low-byte") == 0 || strcmp(argv[i], "-fl") == 0) {
 			if ((++i) < argc) {
 				if (sscanf(argv[i], "%x", &fuse_bits) != 1) {
-					fprintf(stderr, "invalid argument for --fuse-bits\n");
+					fprintf(stderr, "invalid argument for --fuse-low-byte\n");
 					command_line_error = 1;
 				}
 			} else {
-				fprintf(stderr, "missing argument for --fuse-bits\n");
+				fprintf(stderr, "missing argument for --fuse-low-byte\n");
 				command_line_error = 1;
 			}
-		} else if (strcmp(argv[i], "--fuse-high-bits") == 0 || strcmp(argv[i], "-fh") == 0) {
+		} else if (strcmp(argv[i], "--fuse-high-byte") == 0 || strcmp(argv[i], "-fh") == 0) {
 			if ((++i) < argc) {
 				if (sscanf(argv[i], "%x", &fuse_high_bits) != 1) {
-					fprintf(stderr, "invalid argument for --fuse-high-bits\n");
+					fprintf(stderr, "invalid argument for --fuse-high-byte\n");
 					command_line_error = 1;
 				}
 			} else {
-				fprintf(stderr, "missing argument for --fuse-high-bits\n");
+				fprintf(stderr, "missing argument for --fuse-high-byte\n");
 				command_line_error = 1;
 			}
-		} else if (strcmp(argv[i], "--extended-fuse-bits") == 0 || strcmp(argv[i], "-ef") == 0) {
+		} else if (strcmp(argv[i], "--extended-fuse-byte") == 0 || strcmp(argv[i], "-ef") == 0) {
 			if ((++i) < argc) {
 				if (sscanf(argv[i], "%x", &extended_fuse_bits) != 1) {
-					fprintf(stderr, "invalid argument for --extended-fuse-bits\n");
+					fprintf(stderr, "invalid argument for --extended-fuse-byte\n");
 					command_line_error = 1;
 				}
 			} else {
-				fprintf(stderr, "missing argument for --extended-fuse-bits\n");
+				fprintf(stderr, "missing argument for --extended-fuse-byte\n");
 				command_line_error = 1;
 			}
 		} else if (strcmp(argv[i], "--page-size") == 0 || strcmp(argv[i], "-p") == 0) {
@@ -108,9 +108,9 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "Usage: %s [options...]\n", argc > 0 ? argv[0] : "write_avr");
 		fputs("options:\n", stderr);
 		fputs("--lock-bits <byte> / -l <byte> : write Lock bits\n", stderr);
-		fputs("--fuse-bits <byte> / -f <byte> : write Fuse bits\n", stderr);
-		fputs("--fuse-high-bits <byte> / -fh <byte> : write Fuse High bits\n", stderr);
-		fputs("--extended-fuse-bits <byte> / -ef <byte> : write Extended Fuse bits\n", stderr);
+		fputs("--fuse-low-byte <byte> / -fl <byte> : write Fuse Low Byte\n", stderr);
+		fputs("--fuse-high-byte <byte> / -fh <byte> : write Fuse High Byte\n", stderr);
+		fputs("--extended-fuse-byte <byte> / -ef <byte> : write Extended Fuse Byte\n", stderr);
 		fputs("--page-size <size> / -p <size> : set page size (default: 64)\n", stderr);
 		fputs("--input-file <file> / -f <file> : set hex file to write (default: none)\n", stderr);
 		fputs("--chip-erase : do chip erase before writing (default)\n", stderr);
