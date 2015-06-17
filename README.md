@@ -9,6 +9,9 @@ AVRのプログラムの開発には、
 ### 参考資料
 * [Atmel AVR 8-bit and 32-bit Microcontrollers](http://www.atmel.com/products/microcontrollers/avr/?tab=documents)  
   このページの"ATmega48A/PA/88A/PA/168A/PA/328/P Complete"に読み書きの方法、huseの設定の意味などが載っています。
+* [ATmega8](http://www.atmel.com/devices/atmega8.aspx)  
+  ATmega8の情報が"ATmega8(L) Complete"に載っています。
+  Poll RDY/~BSYや(Read|Write) Extended Fuse Bits、EEPROMのpage accessは使えないようだけど、他のコマンドは互換性があるようです。
 
 ### ATmega328Pの仕様メモ(上記参考資料より)
 
