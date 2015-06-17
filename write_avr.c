@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
 		fputs("--fuse-high-byte <byte> / -fh <byte> : write Fuse High Byte\n", stderr);
 		fputs("--extended-fuse-byte <byte> / -ef <byte> : write Extended Fuse Byte\n", stderr);
 		fputs("--page-size <size> / -p <size> : set page size (default: 64)\n", stderr);
-		fputs("--input-file <file> / -f <file> : set hex file to write (default: none)\n", stderr);
+		fputs("--input-file <file> / -i <file> : set hex file to write (default: none)\n", stderr);
 		fputs("--chip-erase : do chip erase before writing (default)\n", stderr);
 		fputs("--no-chip-erase : don't do chip erase before writing\n", stderr);
 		fputs("--validation / -v : do validation after writing\n", stderr);
