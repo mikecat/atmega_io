@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
 	int signature[4];
 	int pages_to_write = 0;
 	int written_pages = 0;
+	int fixed_wait = 0;
 	progress_t progress;
 	/* コマンドライン引数を読み込む */
 	for (i = 1; i < argc; i++) {
@@ -96,6 +97,10 @@ int main(int argc, char *argv[]) {
 			do_validation = 1;
 		} else if (strcmp(argv[i], "--no-validation") == 0) {
 			do_validation = 0;
+		} else if (strcmp(argv[i], "--fixed-wait") == 0) {
+			fixed_wait = 1;
+		} else if (strcmp(argv[i], "--no-fixed-wait") == 0) {
+			fixed_wait = 0;
 		} else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
 			show_help = 1;
 		} else {
@@ -117,6 +122,8 @@ int main(int argc, char *argv[]) {
 		fputs("--no-chip-erase : don't do chip erase before writing\n", stderr);
 		fputs("--validation / -v : do validation after writing\n", stderr);
 		fputs("--no-validation : don't do validation after writing (default)\n", stderr);
+		fputs("--fixed-wait : wait 10ms for writing/erasing\n", stderr);
+		fputs("--no-fixed-wait : use Poll RDY/~BSY for writing/erasing (default)\n", stderr);
 		fputs("--help / -h : show this help\n", stderr);
 
 		fputs("\nconnection between USB-IO2.0 and AVR:\n", stderr);
@@ -169,11 +176,11 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "read_signature_byte error %d\n", ret);
 	}
 	if (do_chip_erase) {
-		if ((ret = chip_erase(avrio)) != AVRIO_SUCCESS) {
+		if ((ret = chip_erase(avrio, fixed_wait)) != AVRIO_SUCCESS) {
 			fprintf(stderr, "error %d on chip_erase\n", ret);
 		}
 	}
-	if ((ret = write_information(avrio,
+	if ((ret = write_information(avrio, fixed_wait,
 	lock_bits, fuse_bits, fuse_high_bits, extended_fuse_bits)) != AVRIO_SUCCESS) {
 		fprintf(stderr, "error %d on write_information\n", ret);
 	}
@@ -199,7 +206,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 		if (to_write) {
-			if ((ret = write_program(avrio, data_words + i, i, page_size, page_size)) != AVRIO_SUCCESS) {
+			if ((ret = write_program(avrio, fixed_wait, data_words + i, i, page_size, page_size)) != AVRIO_SUCCESS) {
 				fprintf(stderr, "error %d on write_program\n", ret);
 				break;
 			}

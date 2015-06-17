@@ -1,7 +1,42 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+
+#if defined(USE_NANOSLEEP)
+#include <time.h>
+#include <errno.h>
+#elif defined(USE_USLEEP)
+#include <unistd.h>
+#else
+#include <windows.h>
+#endif
+
 #include "avr_io.h"
+
+/**
+ * 指定した時間以上待つ
+ * @param ms 待つ時間(ミリ秒)
+ */
+static void sleep_ms(int ms) {
+#if defined(USE_NANOSLEEP)
+	struct timespec req, ret;
+	int r;
+	req.tv_sec = ms / 1000;
+	req.tv_nsec = (long)(ms % 1000) * 1000000L;
+	for(;;) {
+		r = nanosleep(&req, &ret);
+		if (r == -1 && errno == EINTR) {
+			req = ret;
+		} else {
+			break;
+		}
+	}
+#elif defined(USE_USLEEP)
+	usleep(ms * 1000);
+#else
+	Sleep(ms);
+#endif
+}
 
 int disconnect(avrio_t *func) {
 	if (func == NULL) return AVRIO_INVALID_PARAMETER;
@@ -37,24 +72,29 @@ static int send_programming_enable(const avrio_t *func) {
  * Poll RDY/~BSYを実行する。
  * 0が返ってくるまで処理を続ける。
  * @param func 利用する関数が格納された構造体へのポインタ
+ * @param fixed_wait 真の場合、Poll RDY/~BSYを実行するのではなく、10ms待つ
  * @return エラーコード
  */
-static int wait_operation(const avrio_t *func) {
+static int wait_operation(const avrio_t *func, int fixed_wait) {
 	static const int out_seq[4] = {0xF0, 0x00, 0x00, 0x00};
 	int in_seq[4];
 	int i;
 	int ret;
 	if (func == NULL) return AVRIO_INVALID_PARAMETER;
-	do {
-		/* 念のためin syncかを確認する */
-		ret = send_programming_enable(func);
-		if (ret != AVRIO_SUCCESS) return ret;
-		/* ポーリングを行う */
-		for (i = 0; i < 4; i++) {
-			in_seq[i] = (func->io_8bits)(func->hardware_data, out_seq[i]);
-			if (in_seq[i] < 0) return AVRIO_CONTROLLER_ERROR;
-		}
-	} while ((in_seq[3] & 1) != 0);
+	if (fixed_wait) {
+		sleep_ms(10);
+	} else {
+		do {
+			/* 念のためin syncかを確認する */
+			ret = send_programming_enable(func);
+			if (ret != AVRIO_SUCCESS) return ret;
+			/* ポーリングを行う */
+			for (i = 0; i < 4; i++) {
+				in_seq[i] = (func->io_8bits)(func->hardware_data, out_seq[i]);
+				if (in_seq[i] < 0) return AVRIO_CONTROLLER_ERROR;
+			}
+		} while ((in_seq[3] & 1) != 0);
+	}
 	return AVRIO_SUCCESS;
 }
 
@@ -167,7 +207,7 @@ unsigned int start_addr, unsigned int data_size) {
 	return AVRIO_SUCCESS;
 }
 
-int chip_erase(const avrio_t *func) {
+int chip_erase(const avrio_t *func, int fixed_wait) {
 	static const int out_seq[4] = {0xAC, 0x80, 0x00, 0x00};
 	int spe_ret;
 	int i;
@@ -177,11 +217,11 @@ int chip_erase(const avrio_t *func) {
 		int ret = (func->io_8bits)(func->hardware_data, out_seq[i]);
 		if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 	}
-	return wait_operation(func);
+	return wait_operation(func, fixed_wait);
 }
 
-int write_information(const avrio_t *func, int lock_bits, int fuse_bits,
-int fuse_high_bits, int extended_fuse_bits) {
+int write_information(const avrio_t *func, int fixed_wait, int lock_bits,
+int fuse_bits, int fuse_high_bits, int extended_fuse_bits) {
 	int out_seq[4][4] = {
 		{0xAC, 0xA0, 0x00, fuse_bits},
 		{0xAC, 0xA8, 0x00, fuse_high_bits},
@@ -201,13 +241,13 @@ int fuse_high_bits, int extended_fuse_bits) {
 			if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 		}
 		/* 完了を待つ */
-		ret = wait_operation(func);
+		ret = wait_operation(func, fixed_wait);
 		if (ret != AVRIO_SUCCESS) return ret;
 	}
 	return AVRIO_SUCCESS;
 }
 
-int write_program(const avrio_t *func, const unsigned int *data,
+int write_program(const avrio_t *func, int fixed_wait, const unsigned int *data,
 unsigned int start_addr, unsigned int data_size, unsigned int page_size) {
 	int out_seq[4];
 	int spe_ret;
@@ -249,14 +289,14 @@ unsigned int start_addr, unsigned int data_size, unsigned int page_size) {
 				if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 			}
 			/* 完了を待つ */
-			ret = wait_operation(func);
+			ret = wait_operation(func, fixed_wait);
 			if (ret != AVRIO_SUCCESS) return ret;
 		}
 	}
 	return AVRIO_SUCCESS;
 }
 
-int write_eeprom(const avrio_t *func, const int *data,
+int write_eeprom(const avrio_t *func, int fixed_wait, const int *data,
 unsigned int start_addr, unsigned int data_size) {
 	int out_seq[4];
 	int spe_ret;
@@ -291,7 +331,7 @@ unsigned int start_addr, unsigned int data_size) {
 				if (ret < 0) return AVRIO_CONTROLLER_ERROR;
 			}
 			/* 完了を待つ */
-			ret = wait_operation(func);
+			ret = wait_operation(func, fixed_wait);
 			if (ret != AVRIO_SUCCESS) return ret;
 		}
 	}

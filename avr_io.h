@@ -94,46 +94,50 @@ int read_eeprom(const avrio_t *func, int *data_out,
 /**
  * Chip Eraseを行う。
  * @param func 利用する関数が格納された構造体へのポインタ
+ * @param fixed_wait 真の場合、Poll RDY/~BSYを実行するのではなく、10ms待つ
  * @return エラーコード
  */
-int chip_erase(const avrio_t *func);
+int chip_erase(const avrio_t *func, int fixed_wait);
 
 /**
  * 各種情報を書き込む。書き込まない情報は-1を入れる。
  * @param func 利用する関数が格納された構造体へのポインタ
+ * @param fixed_wait 真の場合、Poll RDY/~BSYを実行するのではなく、10ms待つ
  * @param lock_bits Lock bitsに書き込むデータ
  * @param fuse_bits Fuse bitsをに書き込むデータ
  * @param fuse_high_bits Fuse High bitsに書き込むデータ
  * @param extended_fuse_bits Extended Huse Bitsに書き込むデータ
  * @return エラーコード
  */
-int write_information(const avrio_t *func, int lock_bits, int fuse_bits,
-	int fuse_high_bits, int extended_fuse_bits);
+int write_information(const avrio_t *func, int fixed_wait, int lock_bits,
+	int fuse_bits, int fuse_high_bits, int extended_fuse_bits);
 
 /**
  * プログラムデータを書き込む。
  * data_outはあらかじめ十分な領域を確保しておかないといけない。
  * start_addrはpage_sizeの倍数でないといけない。
  * @param func 利用する関数が格納された構造体へのポインタ
+ * @param fixed_wait 真の場合、Poll RDY/~BSYを実行するのではなく、10ms待つ
  * @param data 書き込むプログラムデータを格納する配列
  * @param start_addr 書き込みを開始するプログラムデータのアドレス
  * @param data_size 書き込むプログラムのワード数
  * @param page_size 書き込みに使用するページサイズ(適切に設定しないと失敗します)
  * @return エラーコード
  */
-int write_program(const avrio_t *func, const unsigned int *data,
+int write_program(const avrio_t *func, int fixed_wait, const unsigned int *data,
 	unsigned int start_addr, unsigned int data_size, unsigned int page_size);
 
 /**
  * EEPROMのデータを書き込む。
  * data_outはあらかじめ十分な領域を確保しておかないといけない。
  * @param func 利用する関数が格納された構造体へのポインタ
+ * @param fixed_wait 真の場合、Poll RDY/~BSYを実行するのではなく、10ms待つ
  * @param data 書き込むEEPROMデータを格納する配列
  * @param start_addr 書き込みを開始するEEPROMのアドレス
  * @param data_size 書き込むEEPROMデータのワード数
  * @return エラーコード
  */
-int write_eeprom(const avrio_t *func, const int *data,
+int write_eeprom(const avrio_t *func, int fixed_wait, const int *data,
 	unsigned int start_addr, unsigned int data_size);
 
 #endif
