@@ -1,10 +1,10 @@
-AVRを読み書きするやつ
+ATmegaを読み書きするやつ
 ======
 
-AVRマイコンのプログラムメモリやEEPROMを読み書きするライブラリです。
+ATmega系マイコンのプログラムメモリやEEPROMを読み書きするライブラリです。
 
-AVRのプログラムの開発には、
-[AVRのプログラムを書くやつ(仮)](https://github.com/mikecat/avr_devel)などが利用できます。
+ATmega系マイコンのプログラムの開発には、
+[ATmegaのプログラムを書くやつ(仮)](https://github.com/mikecat/atmega_devel)などが利用できます。
 
 ### 参考資料
 * [Atmel AVR 8-bit and 32-bit Microcontrollers](http://www.atmel.com/products/microcontrollers/avr/?tab=documents)  

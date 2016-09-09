@@ -1,7 +1,7 @@
-#ifndef AVR_IO_H_GUARD_7FCA6973_B2F4_479A_9F39_2DFE7DE31870
-#define AVR_IO_H_GUARD_7FCA6973_B2F4_479A_9F39_2DFE7DE31870
+#ifndef ATMEGA_IO_H_GUARD_7FCA6973_B2F4_479A_9F39_2DFE7DE31870
+#define ATMEGA_IO_H_GUARD_7FCA6973_B2F4_479A_9F39_2DFE7DE31870
 
-/* AVRの読み書きに必要な操作を行う関数の情報を持つ構造体 */
+/* ATmegaの読み書きに必要な操作を行う関数の情報を持つ構造体 */
 typedef struct {
 	/* 各ハードウェア操作プログラム定義のデータ */
 	void *hardware_data;
@@ -17,18 +17,18 @@ typedef struct {
 	 * 成功と判定したら読み込んだ値(0以上255以下)、失敗を検出したら-1を返す。
 	 */
 	int (*io_8bits)(void *hardware_data, int out);
-} avrio_t;
+} atmegaio_t;
 
 /* エラーコード */
 enum {
 	/* 成功と判定された */
-	AVRIO_SUCCESS = 0,
+	ATMEGAIO_SUCCESS = 0,
 	/* 関数のパラメータが不正 */
-	AVRIO_INVALID_PARAMETER,
-	/* AVR操作関数が失敗を返した */
-	AVRIO_CONTROLLER_ERROR,
+	ATMEGAIO_INVALID_PARAMETER,
+	/* ATmega操作関数が失敗を返した */
+	ATMEGAIO_CONTROLLER_ERROR,
 	/* Programming Enableで接続失敗を検出した */
-	AVRIO_PROGRAMMING_ENABLE_ERROR
+	ATMEGAIO_PROGRAMMING_ENABLE_ERROR
 };
 
 /**
@@ -36,14 +36,14 @@ enum {
  * @param func 利用する関数が格納された構造体へのポインタ
  * @return エラーコード
  */
-int disconnect(avrio_t *func);
+int disconnect(atmegaio_t *func);
 
 /**
  * リセット操作を行う。
  * @param func 利用する関数が格納された構造体へのポインタ
  * @return エラーコード
  */
-int reset(const avrio_t *func);
+int reset(const atmegaio_t *func);
 
 /**
  * Signature Byteを読み込む。
@@ -52,7 +52,7 @@ int reset(const avrio_t *func);
  * @param out 読み込んだSignature Byteを保存する配列
  * @return エラーコード
  */
-int read_signature_byte(const avrio_t *func, int *out);
+int read_signature_byte(const atmegaio_t *func, int *out);
 
 /**
  * 各種情報を読み込む。不要なパラメータはNULLで良い。
@@ -64,7 +64,7 @@ int read_signature_byte(const avrio_t *func, int *out);
  * @param calibration_byte Calibration Byteを読み込む領域へのポインタ
  * @return エラーコード
  */
-int read_information(const avrio_t *func, int *lock_bits, int *fuse_bits,
+int read_information(const atmegaio_t *func, int *lock_bits, int *fuse_bits,
 	int *fuse_high_bits, int *extended_fuse_bits, int *calibration_byte);
 
 /**
@@ -76,7 +76,7 @@ int read_information(const avrio_t *func, int *lock_bits, int *fuse_bits,
  * @param data_size 読み込むプログラムのワード数
  * @return エラーコード
  */
-int read_program(const avrio_t *func, unsigned int *data_out,
+int read_program(const atmegaio_t *func, unsigned int *data_out,
 	unsigned int start_addr, unsigned int data_size);
 
 /**
@@ -88,7 +88,7 @@ int read_program(const avrio_t *func, unsigned int *data_out,
  * @param data_size 読み込むEEPROMデータのワード数
  * @return エラーコード
  */
-int read_eeprom(const avrio_t *func, int *data_out,
+int read_eeprom(const atmegaio_t *func, int *data_out,
 	unsigned int start_addr, unsigned int data_size);
 
 /**
@@ -97,7 +97,7 @@ int read_eeprom(const avrio_t *func, int *data_out,
  * @param fixed_wait 真の場合、Poll RDY/~BSYを実行するのではなく、10ms待つ
  * @return エラーコード
  */
-int chip_erase(const avrio_t *func, int fixed_wait);
+int chip_erase(const atmegaio_t *func, int fixed_wait);
 
 /**
  * 各種情報を書き込む。書き込まない情報は-1を入れる。
@@ -109,7 +109,7 @@ int chip_erase(const avrio_t *func, int fixed_wait);
  * @param extended_fuse_bits Extended Huse Bitsに書き込むデータ
  * @return エラーコード
  */
-int write_information(const avrio_t *func, int fixed_wait, int lock_bits,
+int write_information(const atmegaio_t *func, int fixed_wait, int lock_bits,
 	int fuse_bits, int fuse_high_bits, int extended_fuse_bits);
 
 /**
@@ -124,7 +124,7 @@ int write_information(const avrio_t *func, int fixed_wait, int lock_bits,
  * @param page_size 書き込みに使用するページサイズ(適切に設定しないと失敗します)
  * @return エラーコード
  */
-int write_program(const avrio_t *func, int fixed_wait, const unsigned int *data,
+int write_program(const atmegaio_t *func, int fixed_wait, const unsigned int *data,
 	unsigned int start_addr, unsigned int data_size, unsigned int page_size);
 
 /**
@@ -137,7 +137,7 @@ int write_program(const avrio_t *func, int fixed_wait, const unsigned int *data,
  * @param data_size 書き込むEEPROMデータのワード数
  * @return エラーコード
  */
-int write_eeprom(const avrio_t *func, int fixed_wait, const int *data,
+int write_eeprom(const atmegaio_t *func, int fixed_wait, const int *data,
 	unsigned int start_addr, unsigned int data_size);
 
 #endif

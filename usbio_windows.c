@@ -4,7 +4,7 @@
 #include <ddk/hidpi.h>
 #include <stdlib.h>
 #include "usbio_windows.h"
-#include "avr_io.h"
+#include "atmega_io.h"
 
 #define IO_SIZE 65
 #define PORT_NUM 12
@@ -157,12 +157,12 @@ static int usbio_reset(void *hardware_data) {
 	return 1;
 }
 
-avrio_t *usbio_init(int sin_port, int sout_port, int clock_port, int reset_port) {
+atmegaio_t *usbio_init(int sin_port, int sout_port, int clock_port, int reset_port) {
 	static const int vendor_id = 0x1352;
 	static const int product_id[2] = {0x120, 0x121};
 	static const int product_id_num = 2;
 	HANDLE hUsbIO;
-	avrio_t *avrio;
+	atmegaio_t *atmegaio;
 	hid_t *hid;
 	if (sin_port < 0 || PORT_NUM <= sin_port || sout_port < 0 || PORT_NUM <= sout_port ||
 	reset_port < 0 || PORT_NUM <= reset_port || clock_port < 0 || PORT_NUM <= clock_port ||
@@ -176,11 +176,11 @@ avrio_t *usbio_init(int sin_port, int sout_port, int clock_port, int reset_port)
 		return NULL;
 	}
 	/* 情報を格納する */
-	avrio = malloc(sizeof(avrio_t));
-	if (avrio == NULL) return NULL;
+	atmegaio = malloc(sizeof(atmegaio_t));
+	if (atmegaio == NULL) return NULL;
 	hid = malloc(sizeof(hid_t));
 	if (hid == NULL) {
-		free(avrio);
+		free(atmegaio);
 		return NULL;
 	}
 	hid->hDevice = hUsbIO;
@@ -188,9 +188,9 @@ avrio_t *usbio_init(int sin_port, int sout_port, int clock_port, int reset_port)
 	hid->sout_port = sout_port;
 	hid->clock_port = clock_port;
 	hid->reset_port = reset_port;
-	avrio->hardware_data = (void*)hid;
-	avrio->disconnect = usbio_disconnect;
-	avrio->reset = usbio_reset;
-	avrio->io_8bits = usbio_io_8bits;
-	return avrio;
+	atmegaio->hardware_data = (void*)hid;
+	atmegaio->disconnect = usbio_disconnect;
+	atmegaio->reset = usbio_reset;
+	atmegaio->io_8bits = usbio_io_8bits;
+	return atmegaio;
 }

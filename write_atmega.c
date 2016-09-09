@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "usbio_windows.h"
-#include "avr_io.h"
+#include "atmega_io.h"
 #include "progress_bar.h"
 #include "load_hex.h"
 
@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
 	int i, j;
 	FILE* fp;
 	int ret;
-	avrio_t *avrio;
+	atmegaio_t *atmegaio;
 	int signature[4];
 	int pages_to_write = 0;
 	int written_pages = 0;
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 	}
 	/* 必要ならヘルプを表示する */
 	if (show_help || command_line_error) {
-		fprintf(stderr, "Usage: %s [options...]\n", argc > 0 ? argv[0] : "write_avr");
+		fprintf(stderr, "Usage: %s [options...]\n", argc > 0 ? argv[0] : "write_atmega");
 		fputs("options:\n", stderr);
 		fputs("--lock-bits <byte> / -l <byte> : write Lock bits\n", stderr);
 		fputs("--fuse-low-byte <byte> / -fl <byte> : write Fuse Low Byte\n", stderr);
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
 		fputs("--no-fixed-wait : use Poll RDY/~BSY for writing/erasing (default)\n", stderr);
 		fputs("--help / -h : show this help\n", stderr);
 
-		fputs("\nconnection between USB-IO2.0 and AVR:\n", stderr);
+		fputs("\nconnection between USB-IO2.0 and ATmega:\n", stderr);
 		fputs("serial out   (MOSI) : J1-7\n", stderr);
 		fputs("serial in    (MISO) : J2-0\n", stderr);
 		fputs("serial clock (SCK)  : J1-6\n", stderr);
@@ -162,26 +162,26 @@ int main(int argc, char *argv[]) {
 	}
 
 	/* 書き込み操作を実装する */
-	if ((avrio = usbio_init(8, 7, 6, 5)) == NULL) {
+	if ((atmegaio = usbio_init(8, 7, 6, 5)) == NULL) {
 		fputs("error on usbio_init\n", stderr);
 		return 1;
 	}
-	if ((ret = reset(avrio)) != AVRIO_SUCCESS) {
+	if ((ret = reset(atmegaio)) != ATMEGAIO_SUCCESS) {
 		fprintf(stderr, "error %d on reset\n", ret);
 	}
-	if ((ret = read_signature_byte(avrio, signature)) == AVRIO_SUCCESS) {
+	if ((ret = read_signature_byte(atmegaio, signature)) == ATMEGAIO_SUCCESS) {
 		printf("signature = %02X %02X %02X\n",
 			signature[0], signature[1], signature[2]);
 	} else {
 		fprintf(stderr, "read_signature_byte error %d\n", ret);
 	}
 	if (do_chip_erase) {
-		if ((ret = chip_erase(avrio, fixed_wait)) != AVRIO_SUCCESS) {
+		if ((ret = chip_erase(atmegaio, fixed_wait)) != ATMEGAIO_SUCCESS) {
 			fprintf(stderr, "error %d on chip_erase\n", ret);
 		}
 	}
-	if ((ret = write_information(avrio, fixed_wait,
-	lock_bits, fuse_bits, fuse_high_bits, extended_fuse_bits)) != AVRIO_SUCCESS) {
+	if ((ret = write_information(atmegaio, fixed_wait,
+	lock_bits, fuse_bits, fuse_high_bits, extended_fuse_bits)) != ATMEGAIO_SUCCESS) {
 		fprintf(stderr, "error %d on write_information\n", ret);
 	}
 
@@ -206,7 +206,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 		if (to_write) {
-			if ((ret = write_program(avrio, fixed_wait, data_words + i, i, page_size, page_size)) != AVRIO_SUCCESS) {
+			if ((ret = write_program(atmegaio, fixed_wait, data_words + i, i, page_size, page_size)) != ATMEGAIO_SUCCESS) {
 				fprintf(stderr, "error %d on write_program\n", ret);
 				break;
 			}
@@ -233,7 +233,7 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			if (to_write) {
-				if ((ret = read_program(avrio, validation_words + i, i, page_size)) != AVRIO_SUCCESS) {
+				if ((ret = read_program(atmegaio, validation_words + i, i, page_size)) != ATMEGAIO_SUCCESS) {
 					fprintf(stderr, "error %d on read_program\n", ret);
 					break;
 				}
@@ -248,9 +248,9 @@ int main(int argc, char *argv[]) {
 		fputc('\n', stderr);
 		puts("--- validation results ---");
 		printf("program: %d word(s) checked, %d mismatch(es) found.\n", checked, mismatch);
-		if ((ret = read_information(avrio,
+		if ((ret = read_information(atmegaio,
 		&lock_bits_read, &fuse_bits_read, &fuse_high_bits_read,
-		&extended_fuse_bits_read, &calibration_byte_read)) == AVRIO_SUCCESS) {
+		&extended_fuse_bits_read, &calibration_byte_read)) == ATMEGAIO_SUCCESS) {
 			puts("Fuse bits and Lock bits:");
 			printf("Lock bits = %02X%s\n", lock_bits_read,
 				(lock_bits >= 0 && lock_bits != lock_bits_read) ? " (mismatch)" : "");
@@ -266,7 +266,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if ((ret = disconnect(avrio)) != AVRIO_SUCCESS) {
+	if ((ret = disconnect(atmegaio)) != ATMEGAIO_SUCCESS) {
 		fprintf(stderr, "disconnect error %d\n", ret);
 	}
 	return 0;
